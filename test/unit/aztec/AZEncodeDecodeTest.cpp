@@ -110,44 +110,20 @@ namespace {
 	}
 }
 
-TEST(AZEncodeDecodeTest, EncodeDecode1)
+TEST(AZEncodeDecodeTest, EncodeDecode)
 {
 	TestEncodeDecode("Abc123!", true, 1);
-}
-
-TEST(AZEncodeDecodeTest, EncodeDecode2)
-{
 	TestEncodeDecode("Lorem ipsum. http://test/", true, 2);
-}
-
-TEST(AZEncodeDecodeTest, EncodeDecode3)
-{
 	TestEncodeDecode("AAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAANAAAAN", true, 3);
-}
-
-TEST(AZEncodeDecodeTest, EncodeDecode4)
-{
 	TestEncodeDecode("http://test/~!@#*^%&)__ ;:'\"[]{}\\|-+-=`1029384", true, 4);
-}
-
-TEST(AZEncodeDecodeTest, EncodeDecode5)
-{
 	TestEncodeDecode("http://test/~!@#*^%&)__ ;:'\"[]{}\\|-+-=`1029384756<>/?abc"
 		"Four score and seven our forefathers brought forth", false, 5);
-}
-
-TEST(AZEncodeDecodeTest, EncodeDecode10)
-{
 	TestEncodeDecode("In ut magna vel mauris malesuada dictum. Nulla ullamcorper metus quis diam"
 		" cursus facilisis. Sed mollis quam id justo rutrum sagittis. Donec laoreet rutrum"
 		" est, nec convallis mauris condimentum sit amet. Phasellus gravida, justo et congue"
 		" auctor, nisi ipsum viverra erat, eget hendrerit felis turpis nec lorem. Nulla"
 		" ultrices, elit pellentesque aliquet laoreet, justo erat pulvinar nisi, id"
 		" elementum sapien dolor et diam.", false, 10);
-}
-
-TEST(AZEncodeDecodeTest, EncodeDecode23)
-{
 	TestEncodeDecode("In ut magna vel mauris malesuada dictum. Nulla ullamcorper metus quis diam"
 		" cursus facilisis. Sed mollis quam id justo rutrum sagittis. Donec laoreet rutrum"
 		" est, nec convallis mauris condimentum sit amet. Phasellus gravida, justo et congue"
@@ -170,10 +146,6 @@ TEST(AZEncodeDecodeTest, EncodeDecode23)
 		" Phasellus gravida, justo et congue auctor, nisi ipsum viverra erat, eget hendrerit"
 		" felis turpis nec lorem. Nulla ultrices, elit pellentesque aliquet laoreet, justo"
 		" erat pulvinar nisi, id elementum sapien dolor et diam.", false, 23);
-}
-
-TEST(AZEncodeDecodeTest, EncodeDecode31)
-{
 	TestEncodeDecode("In ut magna vel mauris malesuada dictum. Nulla ullamcorper metus quis diam"
 		" cursus facilisis. Sed mollis quam id justo rutrum sagittis. Donec laoreet rutrum"
 		" est, nec convallis mauris condimentum sit amet. Phasellus gravida, justo et congue"

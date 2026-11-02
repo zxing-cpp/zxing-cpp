@@ -40,62 +40,22 @@ namespace {
 
 }
 
-TEST(QRDataMaskTest, Mask0)
+TEST(QRDataMaskTest, Model2Mask)
 {
 	TestMaskAcrossDimensions(0, [](int i, int j) { return (i + j) % 2 == 0; });
-}
-
-TEST(QRDataMaskTest, Mask1)
-{
 	TestMaskAcrossDimensions(1, [](int i, int) { return i % 2 == 0; });
-}
-
-TEST(QRDataMaskTest, Mask2)
-{
 	TestMaskAcrossDimensions(2, [](int, int j) { return j % 3 == 0; });
-}
-
-TEST(QRDataMaskTest, Mask3)
-{
 	TestMaskAcrossDimensions(3, [](int i, int j) { return (i + j) % 3 == 0; });
-}
-
-TEST(QRDataMaskTest, Mask4)
-{
 	TestMaskAcrossDimensions(4, [](int i, int j) { return (i / 2 + j / 3) % 2 == 0; });
-}
-
-TEST(QRDataMaskTest, Mask5)
-{
 	TestMaskAcrossDimensions(5, [](int i, int j) { return (i * j) % 2 + (i * j) % 3 == 0; });
-}
-
-TEST(QRDataMaskTest, Mask6)
-{
 	TestMaskAcrossDimensions(6, [](int i, int j) { return ((i * j) % 2 + (i * j) % 3) % 2 == 0; });
-}
-
-TEST(QRDataMaskTest, Mask7)
-{
 	TestMaskAcrossDimensions(7, [](int i, int j) { return ((i + j) % 2 + (i * j) % 3) % 2 == 0; });
 }
 
-TEST(QRDataMaskTest, MicroMask0)
+TEST(QRDataMaskTest, MicroMask)
 {
 	TestMicroMaskAcrossDimensions(0, [](int i, int) { return i % 2 == 0; });
-}
-
-TEST(QRDataMaskTest, MicroMask1)
-{
 	TestMicroMaskAcrossDimensions(1, [](int i, int j) { return (i / 2 + j / 3) % 2 == 0; });
-}
-
-TEST(QRDataMaskTest, MicroMask2)
-{
 	TestMicroMaskAcrossDimensions(2, [](int i, int j) { return ((i * j) % 2 + (i * j) % 3) % 2 == 0; });
-}
-
-TEST(QRDataMaskTest, MicroMask3)
-{
 	TestMicroMaskAcrossDimensions(3, [](int i, int j) { return ((i + j) % 2 + (i * j) % 3) % 2 == 0; });
 }

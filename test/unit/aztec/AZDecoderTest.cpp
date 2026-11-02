@@ -98,11 +98,8 @@ TEST(AZDecoderTest, DecodeTooManyErrors)
 
 	DecoderResult result = parse(std::move(bits), true, 16, 4);
 	EXPECT_EQ(result.error(), Error::Checksum);
-}
 
-TEST(AZDecoderTest, DecodeTooManyErrors2)
-{
-	auto bits = ParseBitMatrix(
+	bits = ParseBitMatrix(
 		". X X . . X . X X . . . X . . X X X . . . X X . X X . \n"
 		"X X . X X . . X . . . X X . . . X X . X X X . X . X X \n"
 		". . . . X . . . X X X . X X . X X X X . X X . . X . . \n"
@@ -132,7 +129,7 @@ TEST(AZDecoderTest, DecodeTooManyErrors2)
 		"X X . . . X X . . X . X . . . . X X . X . . X . X . X \n"
 		, 'X', true);
 
-	DecoderResult result = parse(std::move(bits), true, 16, 4);
+	result = parse(std::move(bits), true, 16, 4);
 	EXPECT_EQ(result.error(), Error::Checksum);
 }
 

@@ -89,16 +89,13 @@ TEST(DMHighLevelEncodeTest, ASCIIEncodation)
 }
 
 
-TEST(DMHighLevelEncodeTest, C40EncodationBasic1)
+TEST(DMHighLevelEncodeTest, C40Encodation)
 {
 	std::string visualized = Encode(L"AIMAIMAIM");
 	EXPECT_EQ(visualized, "230 91 11 91 11 91 11 254");
 	//230 shifts to C40 encodation, 254 unlatches, "else" case
-}
 
-TEST(DMHighLevelEncodeTest, C40EncodationBasic2)
-{
-	std::string visualized = Encode(L"AIMAIAB");
+	visualized = Encode(L"AIMAIAB");
 	EXPECT_EQ(visualized, "230 91 11 90 255 254 67 129");
 	//"B" is normally encoded as "15" (one C40 value)
 	//"else" case: "B" is encoded as ASCII
@@ -125,22 +122,16 @@ TEST(DMHighLevelEncodeTest, C40EncodationBasic2)
 	//"10 243" =
 	//254 = unlatch, 235 = Upper Shift, 108 = � = 0xEB/235 - 128 + 1
 	//"else" case
-}
 
-TEST(DMHighLevelEncodeTest, C40EncodationSpecExample)
-{
 	//Example in Figure 1 in the spec
-	std::string visualized = Encode(L"A1B2C3D4E5F6G7H8I9J0K1L2");
+	visualized = Encode(L"A1B2C3D4E5F6G7H8I9J0K1L2");
 	EXPECT_EQ(visualized, "230 88 88 40 8 107 147 59 67 126 206 78 126 144 121 35 47 254");
-}
 
-TEST(DMHighLevelEncodeTest, C40EncodationSpecialCases1)
-{
 	//Special tests avoiding ultra-long test strings because these tests are only used
 	//with the 16x48 symbol (47 data codewords)
 	DataMatrix::OverrideSymbolSet(TEST_SYMBOLS, Size(TEST_SYMBOLS));
 
-	std::string visualized = Encode(L"AIMAIMAIMAIMAIMAIM");
+	visualized = Encode(L"AIMAIMAIMAIMAIMAIM");
 	EXPECT_EQ(visualized, "230 91 11 91 11 91 11 91 11 91 11 91 11");
 	//case "a": Unlatch is not required
 
@@ -160,11 +151,8 @@ TEST(DMHighLevelEncodeTest, C40EncodationSpecialCases1)
 	visualized = Encode(L"AIMAIMAIMA");
 	EXPECT_EQ(visualized, "230 91 11 91 11 91 11 66");
 	// case "d": Skip Unlatch and write last character in ASCII
-}
 
-TEST(DMHighLevelEncodeTest, C40EncodationSpecialCases2) {
-
-	std::string visualized = Encode(L"AIMAIMAIMAIMAIMAIMAI");
+	visualized = Encode(L"AIMAIMAIMAIMAIMAIMAI");
 	EXPECT_EQ(visualized, "230 91 11 91 11 91 11 91 11 91 11 91 11 254 66 74");
 	//available > 2, rest = 2 --> unlatch and encode as ASCII
 }
@@ -278,30 +266,21 @@ TEST(DMHighLevelEncodeTest, Base256Encodation)
 	EXPECT_EQ(visualized.substr(visualized.length() - expectedEnd.length()), expectedEnd);
 }
 
-TEST(DMHighLevelEncodeTest, UnlatchingFromC40)
+TEST(DMHighLevelEncodeTest, Unlatching)
 {
-	std::string visualized = Encode(L"AIMAIMAIMAIMaimaimaim");
+	std::string visualized = Encode(L"AIMAIMAIMAIMaimaimaim"); // from C40
 	EXPECT_EQ(visualized, "230 91 11 91 11 91 11 254 66 74 78 239 91 11 91 11 91 11");
-}
 
-TEST(DMHighLevelEncodeTest, UnlatchingFromText)
-{
-	std::string visualized = Encode(L"aimaimaimaim12345678");
+	visualized = Encode(L"aimaimaimaim12345678"); // from Text
 	EXPECT_EQ(visualized, "239 91 11 91 11 91 11 91 11 254 142 164 186 208 129 237");
-}
 
-TEST(DMHighLevelEncodeTest, tHelloWorld)
-{
-	std::string visualized = Encode(L"Hello World!");
+	visualized = Encode(L"Hello World!");
 	EXPECT_EQ(visualized, "73 239 116 130 175 123 148 64 158 233 254 34");
-}
 
-TEST(DMHighLevelEncodeTest, Bug1664266)
-{
 	// There was an exception and the encoder did not handle the unlatching from
-	// EDIFACT encoding correctly
+	// EDIFACT encoding correctly (Bug1664266)
 
-	std::string visualized = Encode(L"CREX-TAN:h");
+	visualized = Encode(L"CREX-TAN:h");
 	EXPECT_EQ(visualized, "240 13 33 88 181 64 78 124 59 105");
 
 	visualized = Encode(L"CREX-TAN:hh");
@@ -309,25 +288,16 @@ TEST(DMHighLevelEncodeTest, Bug1664266)
 
 	visualized = Encode(L"CREX-TAN:hhh");
 	EXPECT_EQ(visualized, "240 13 33 88 181 64 78 124 59 105 105 105");
-}
 
-TEST(DMHighLevelEncodeTest, X12Unlatch)
-{
-	std::string visualized = Encode(L"*DTCP01");
+	visualized = Encode(L"*DTCP01"); // from X12
 	EXPECT_EQ(visualized, "238 9 10 104 141 254 50 129");
-}
 
-TEST(DMHighLevelEncodeTest, X12Unlatch2)
-{
-	std::string visualized = Encode(L"*DTCP0");
+	visualized = Encode(L"*DTCP0");
 	EXPECT_EQ(visualized, "238 9 10 104 141");
-}
 
-TEST(DMHighLevelEncodeTest, Bug3048549)
-{
 	// There was an IllegalArgumentException for an illegal character here because
-	// of an encoding problem of the character 0x0060 in Java source code.
-	std::string visualized = Encode(L"fiykmj*Rh2`,e6");
+	// of an encoding problem of the character 0x0060 in Java source code. (Bug3048549)
+	visualized = Encode(L"fiykmj*Rh2`,e6");
 	EXPECT_EQ(visualized, "239 122 87 154 40 7 171 115 207 12 130 71 155 254 129 237");
 }
 
@@ -351,45 +321,3 @@ TEST(DMHighLevelEncodeTest, EDIFACTWithEODBug)
 	// switch to EDIFACT on '<', uses 10 code words + 2 padding. Buggy code introduced invalid 254 after the 5
 	EXPECT_EQ(visualized, "98 99 100 240 242 223 129 8 49 5 129 147");
 }
-
-//  @Ignore
-//  @Test  
-//  public void testDataURL() {
-//
-//    byte[] data = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
-//        0x7E, 0x7F, (byte) 0x80, (byte) 0x81, (byte) 0x82};
-//    String expected = encodeHighLevel(new String(data, StandardCharsets.ISO_8859_1));
-//    String visualized = encodeHighLevel("url(data:text/plain;charset=iso-8859-1,"
-//                                            + "%00%01%02%03%04%05%06%07%08%09%0A%7E%7F%80%81%82)");
-//    assertEquals(expected, visualized);
-//    assertEquals("1 2 3 4 5 6 7 8 9 10 11 231 153 173 67 218 112 7", visualized);
-//
-//    visualized = encodeHighLevel("url(data:;base64,flRlc3R+)");
-//    assertEquals("127 85 102 116 117 127 129 56", visualized);
-//  }
-//
-//  private static String encodeHighLevel(String msg) {
-//    CharSequence encoded = HighLevelEncoder.encodeHighLevel(msg);
-//    //DecodeHighLevel.decode(encoded);
-//    return visualize(encoded);
-//  }
-//  
-//  /**
-//   * Convert a string of char codewords into a different string which lists each character
-//   * using its decimal value.
-//   *
-//   * @param codewords the codewords
-//   * @return the visualized codewords
-//   */
-//  static String visualize(CharSequence codewords) {
-//    StringBuilder sb = new StringBuilder();
-//    for (int i = 0; i < codewords.length(); i++) {
-//      if (i > 0) {
-//        sb.append(' ');
-//      }
-//      sb.append((int) codewords.charAt(i));
-//    }
-//    return sb.toString();
-//  }
-//
-//}
