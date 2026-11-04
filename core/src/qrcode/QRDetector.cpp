@@ -484,11 +484,12 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 	auto tr3 = TraceLine(image, fp.tr, fp.tl, 3);
 
 	if (bl2.isValid() && tr2.isValid() && bl3.isValid() && tr3.isValid()) {
+		// TODO: check the bl and tr pair is sufficiently parallel/perpendicular to be considered valid, deal with round fps
 		// intersect both outer and inner line pairs and take the center point between the two intersection points
-		auto brInter = (intersect(bl2, tr2) + intersect(bl3, tr3)) / 2;
+		auto brInter = (intersect(bl2, tr2) + intersect(bl3, tr3)) / 2; // brInter might be NAN or INF
 		log(brInter, LOG_B);
 
-		if (dimension > 21)
+		if (dimension > 21 && image.isIn(brInter))
 			if (auto brCP = LocateAlignmentPattern(image, moduleSize, brInter))
 				br = *brCP;
 
