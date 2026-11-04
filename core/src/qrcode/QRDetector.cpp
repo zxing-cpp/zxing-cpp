@@ -583,8 +583,8 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 						verti.push_back(*apP(x, yi));
 				}
 
-				// if we found 2 each, intersect the two lines that are formed by connecting the point pairs
-				if (Size(hori) == 2 && Size(verti) == 2) {
+				// if we found 2 distinct points each, intersect the two lines that are formed by connecting the point pairs
+				if (Size(hori) == 2 && Size(verti) == 2 && hori[0] != hori[1] && verti[0] != verti[1]) {
 					auto guessed = intersect(RegressionLine(hori[0], hori[1]), RegressionLine(verti[0], verti[1]));
 					auto found = LocateAlignmentPattern(image, estimateModuleSize(x, y), guessed);
 					// search again near that intersection and if the search fails, use the intersection
