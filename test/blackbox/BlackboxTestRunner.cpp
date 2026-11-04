@@ -420,19 +420,19 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 			}
 		}
 
-		modeSummaries += std::format("| {}: {:3} {:3} {:3} {:3}  -> {:3}ms ", ToString(mode), numFound[0], numFound[1],
+		modeSummaries += std::format("| {}: {:2} {:2} {:2} {:2}  -> {:3}ms ", ToString(mode), numFound[0], numFound[1],
 									 numFound[2], numFound[3], decodeTime);
 	}
-	std::println("{:25} {:3} images {}", directory.stem().string(), Size(imagePaths), modeSummaries);
+	std::println("{:20} {:3} images {}", directory.stem().string(), Size(imagePaths), modeSummaries);
 
 	auto printMismatches = [&](const std::map<fs::path, std::map<std::string, TestFilter>>& mismatches, std::string_view title) {
 		for (const auto& [imagePath, expected] : mismatches) {
 			for (const auto& [expectedText, found] : expected) {
-				std::print("{:35} ", imagePath.lexically_relative(directory.parent_path()).string());
+				std::print("{:30} ", imagePath.lexically_relative(directory.parent_path()).string());
 				for (const auto mode : {TestMode::Slow, TestMode::Fast, TestMode::Pure}) {
 					std::print(" | {}:", ToString(mode));
 					for (int rotation : {0, 1, 2, 3})
-						std::print(" {:>3}", found(mode, rotation) ? 'X' : ' ');
+						std::print(" {:>2}", found(mode, rotation) ? 'X' : ' ');
 					std::print("          ");
 				}
 				std::println(" | {}: {}", title, expectedText);
