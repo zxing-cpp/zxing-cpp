@@ -1,0 +1,78 @@
+Format = "rMQR Code"
+UEC = "1.00"
+
+[[symbol]]
+TextPlain = "46"
+
+[[symbol]]
+TextPlain = "129"
+
+[[symbol]]
+TextPlain = "126"
+
+[[symbol]]
+TextPlain = "29"
+
+[[symbol]]
+TextPlain = "34"
+
+[[symbol]]
+TextPlain = "190"
+
+[[symbol]]
+TextPlain = "122"
+
+[[symbol]]
+TextPlain = "66"
+
+[[symbol]]
+TextPlain = "109"
+
+[[symbol]]
+TextPlain = "194"
+
+[[symbol]]
+TextPlain = "133"
+
+[[symbol]]
+TextPlain = "59"
+find = "s023 fh"
+
+[[symbol]]
+TextPlain = "35"
+
+[[symbol]]
+TextPlain = "200"
+
+[[symbol]]
+TextPlain = "195"
+
+[[symbol]]
+TextPlain = "95"
+
+[[symbol]]
+TextPlain = "160"
+
+[[symbol]]
+TextPlain = "108"
+
+[[symbol]]
+TextPlain = "103"
+
+[[symbol]]
+TextPlain = "156"
+
+[[symbol]]
+TextPlain = "56"
+
+[[symbol]]
+TextPlain = "188"
+
+[[symbol]]
+TextPlain = "75"
+
+[[symbol]]
+TextPlain = "152"
+
+[[symbol]]
+TextPlain = "153"

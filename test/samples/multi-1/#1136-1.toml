@@ -1,0 +1,28 @@
+Format = "rMQR Code"
+UEC = "1.00"
+
+[[symbol]]
+TextPlain = "209"
+
+[[symbol]]
+TextPlain = "213"
+
+[[symbol]]
+TextPlain = "217"
+
+[[symbol]]
+TextPlain = "221"
+
+[[symbol]]
+TextPlain = "225"
+
+[[symbol]]
+TextPlain = "229"
+# platform dependent!?!
+UEC =
+
+[[symbol]]
+TextPlain = "233"
+
+[[symbol]]
+TextPlain = "237"

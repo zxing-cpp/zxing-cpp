@@ -1043,37 +1043,43 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 		auto apP = Matrix<std::optional<PointF>>(Size(apX), Size(apY));
 		auto grid = LocalGrid(*startTracer.img, mod2Pix, {dimT, dimR});
 
-		for (int y = 0; y < Size(apY); ++y)
-			for (int x = 0; x < Size(apX); ++x) {
-				std::optional<PointF> ap;
-				PointI api{apX[x], apY[y]};
-				int Nx = Size(apX) - 1, Ny = Size(apY) - 1;
+		if (version->dataBlocksX() == 1 && version->dataBlocksY() == 1) {
+			if (auto res = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix); res.isValid())
+				co_yield std::move(res);
+		} else {
+			for (int y = 0; y < Size(apY); ++y)
+				for (int x = 0; x < Size(apX); ++x) {
+					std::optional<PointF> ap;
+					PointI api{apX[x], apY[y]};
+					int Nx = Size(apX) - 1, Ny = Size(apY) - 1;
+					using enum LocalGrid::Pattern;
 
-				if (x == 0 && y == 0) // top-left
-					ap = grid.at(api, {2, 0}).findPattern(4, {1, 0}, "r", {0, 0}, "d", {-1, -1}, "dr");
-				else if (x == Nx && y == 0) // top-right
-					ap = grid.at(api, {-1, 1}).findPattern(4, {0, 0}, "ld", {}, {}, {1, -1}, "dl");
-				else if (x == Nx && y == Ny) // bottom-right
-					ap = grid.at(api, {0, -2}).findPattern(4, {0, -1}, "u", {0, 0}, "l", {1, 1}, "ul");
-				else if (x == 0 && y == Ny) // bottom-left
-					ap = grid.at(api, {1, -1}).findPattern(4, {}, {}, {0, 0}, "ur", {-1, 1}, "ur");
-				else if (x == 0) // left
-					ap = grid.at(api, {2, 0}).findPattern(3, {1, 0}, "r", {0, -1}, "udr", {}, {});
-				else if (x == Nx) // right
-					ap = grid.at(api, {-1, 0}).findPattern(3, {0, 0}, "lud", {0, -1}, "l", {}, {});
-				else if (y == 0) // top
-					ap = grid.at(api, {-1, 0}).findPattern(3, {-1, 0}, "lrd", {0, 0}, "d", {}, {});
-				else if (y == Ny) // bottom
-					ap = grid.at(api, {-1, -1}).findPattern(3, {-1, -1}, "u", {0, 0}, "lru", {}, {});
-				else // center
-					ap = grid.at(api, {-1, 0}).findPattern(3, {-1, 0}, "lrud", {0, -1}, "lrud", {}, {});
+					if (x == 0 && y == 0) // top-left
+						ap = grid.at(api, {2, 1}).find({{"r", BW, {}, 5}, {"d", B, {}}, {"dr", W, {-1, -1}}}, 4);
+					else if (x == Nx && y == 0) // top-right
+						ap = grid.at(api, {-1, 1}).find({{"ld", WB, {}}, {"dl", W, {1, -1}}}, 4);
+					else if (x == Nx && y == Ny) // bottom-right
+						ap = grid.at(api, {-1, -2}).find({{"u", BW, {}, 5}, {"l", B, {}}, {"ul", W, {1, 1}}}, 4);
+					else if (x == 0 && y == Ny) // bottom-left
+						ap = grid.at(api, {1, -1}).find({{"ur", B, {}}, {"ur", W, {-1, 1}}}, 4);
+					else if (x == 0) // left
+						ap = grid.at(api, {2, 0}).find({{"r", WB, {1, 0}}, {"udr", B, {0, -1}}, {"ud", W, {-1, 0}}}, 4);
+					else if (x == Nx) // right
+						ap = grid.at(api, {-1, 0}).find({{"lud", WB, {}}, {"l", B, {0, -1}}, {"ud", W, {1, 0}}}, 4);
+					else if (y == 0) // top
+						ap = grid.at(api, {0, -1}).find({{"lrd", WB, {-1, 0}}, {"d", B, {}}, {"lr", W, {0, -1}}}, 4);
+					else if (y == Ny) // bottom
+						ap = grid.at(api, {-1, -1}).find({{"u", WB, {-1, -1}}, {"lru", B, {}}, {"lr", W, {0, 1}}}, 4);
+					else // center
+						ap = grid.at(api, {-1, 0}).find({{"lrud", WB, {-1, 0}}, {"lrud", B, {0, -1}}}, 4);
 
-				if (ap)
-					apP.set(x, y, *ap);
-			}
+					if (ap)
+						apP.set(x, y, *ap);
+				}
 
-		if (auto res = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix, std::move(apP), apX, apY); res.isValid())
-			co_yield std::move(res);
+			if (auto res = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix, std::move(apP), apX, apY); res.isValid())
+				co_yield std::move(res);
+		}
 #else
 		if (auto res = SampleGrid(*startTracer.img, dimT, dimR, mod2Pix); res.isValid())
 			co_yield std::move(res);

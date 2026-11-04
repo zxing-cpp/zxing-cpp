@@ -829,12 +829,14 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 
 	auto grid = LocalGrid(image, bestPT, {dim, dim});
 
-	auto tr = grid.at({dim - 1, 0}, {-2, 1}).findPattern(3, {1, 0}, "l", {}, "", {1, -1}, "ld");
-	auto bl = grid.at({0, dim - 1}, {1, -2}).findPattern(3, {0, 1}, "u", {}, "", {-1, 1}, "ur");
+	using enum LocalGrid::Pattern;
+	auto tr = grid.at({dim - 1, 0}, {-2, 1}).find({{"l", BW}, {"ld", W, {1, -1}}}, 4);
+	auto bl = grid.at({0, dim - 1}, {1, -2}).find({{"u", BW}, {"ur", W, {-1, 1}}}, 4);
 	auto br = grid.at({dim - 1, dim - 1}, {-3, -3}).findCorner(5, {1, 1});
 
-	if (tr && bl && br)
-		bestPT = PerspectiveTransform(Rectangle(dim, dim, 0.5), {bestPT({0.5, 0.5}), *tr, *br, *bl});
+	bestPT = PerspectiveTransform(Rectangle(dim, dim, 0.5),
+								  {bestPT({0.5, 0.5}), tr.value_or(bestPT({dim - 0.5, 0.5})),
+								   br.value_or(bestPT({dim - 0.5, dim - 0.5})), bl.value_or(bestPT({0.5, dim - 0.5}))});
 
 	return SampleGrid(image, dim, dim, bestPT);
 }
@@ -885,49 +887,86 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 		return {};
 
 	const PointI dim = Version::SymbolSize(bestFI.microVersion, Type::rMQR);
+	const Version* version = Version::rMQR(bestFI.microVersion);
+	if (!version)
+		return {};
 
-	// TODO: this is a WIP
-	auto intersectQuads = [](QuadrilateralF& a, QuadrilateralF& b) {
-		auto tl = Center(a);
-		auto br = Center(b);
-		// rotate points such that topLeft of a is furthest away from b and topLeft of b is closest to a
-		auto dist2B = [c = br](auto a, auto b) { return distance(a, c) < distance(b, c); };
-		auto offsetA = narrow_cast<int>(std::max_element(a.begin(), a.end(), dist2B) - a.begin());
-		auto dist2A = [c = tl](auto a, auto b) { return distance(a, c) < distance(b, c); };
-		auto offsetB = narrow_cast<int>(std::min_element(b.begin(), b.end(), dist2A) - b.begin());
+	auto mod2Pix = bestPT;
+	auto grid = LocalGrid(image, mod2Pix, dim);
+	auto apM = version->alignmentPatternCenters();
+	apM.insert(apM.begin(), 0);       // include the top-left corner module in the alignment pattern centers
+	apM.insert(apM.end(), dim.x - 1); // include the top-right corner module in the alignment pattern centers
+	auto apP = Matrix<std::optional<PointF>>(Size(apM), 2); // found/guessed alignment pattern positions in pixels
+	const int R = 5;
+	using enum LocalGrid::Pattern;
 
-		a = RotatedCorners(a, offsetA);
-		b = RotatedCorners(b, offsetB);
+	apP.set(0, 0, mod2Pix(centered(PointI{0, 0})));         // tl fp corner
+	apP.set(0, 1, mod2Pix(centered(PointI{0, dim.y - 1}))); // bl fp corner
+	if (dim.y > 9)
+		apP.set(0, 1,
+				grid.at({0, dim.y - 1}, {1, -1})
+					.find({ // bl corner finder pattern
+						{"ru", B, {}, 2},
+						{"ru", W, {-1, 1}, R},
+						{"ld", WB, {1, -1}, 1},
+					}));
 
-		auto tr = (intersect(RegressionLine(a[0], a[1]), RegressionLine(b[1], b[2]))
-				   + intersect(RegressionLine(a[3], a[2]), RegressionLine(b[0], b[3])))
-				  / 2;
-		auto bl = (intersect(RegressionLine(a[0], a[3]), RegressionLine(b[2], b[3]))
-				   + intersect(RegressionLine(a[1], a[2]), RegressionLine(b[0], b[1])))
-				  / 2;
-
-		log(tr, LOG_G);
-		log(bl, LOG_G);
-
-		return QuadrilateralF{tl, tr, br, bl};
-	};
-
-	if (auto found = LocateAlignmentPattern(image, fp.size / 7, bestPT(dim - PointF(3, 3)))) {
-		log(*found, LOG_G);
-		if (auto spQuad = FindConcentricPatternCorners(image, *found, fp.size / 2, 1)) {
-			auto dest = intersectQuads(*fpQuad, *spQuad);
-			if (dim.y <= 9) {
-				bestPT = PerspectiveTransform({{6.5, 0.5}, {dim.x - 1.5, dim.y - 3.5}, {dim.x - 1.5, dim.y - 1.5}, {6.5, 6.5}},
-											  {fpQuad->topRight(), spQuad->topRight(), spQuad->bottomRight(), fpQuad->bottomRight()});
-			} else {
-				dest[0] = fp;
-				dest[2] = *found;
-				bestPT = PerspectiveTransform({{3.5, 3.5}, {dim.x - 2.5, 3.5}, {dim.x - 2.5, dim.y - 2.5}, {3.5, dim.y - 2.5}}, dest);
-			}
-		}
+	for (int i = 1; i < Size(apM) - 1; ++i) {
+		auto tr = grid.at({apM[i], 0}, {0, 2})
+					  .find({
+						  {"lr", WB, {}, R, 1},
+						  {"d", BW, {}, R - 1},
+						  //   {"lr", W, {0, -1}, R}, // quiet zone
+						  {"d", B, {-1, 0}, 2},
+						  {"d", B, {+1, 0}, 2},
+					  });
+		auto br = grid.at({apM[i], dim.y - 1}, {0, -2})
+					  .find({
+						  {"lr", WB, {}, R, 1},
+						  {"u", BW, {}, R - 1},
+						  //   {"lr", W, {0, +1}, R}, // quiet zone
+						  {"u", B, {-1, 0}, 2},
+						  {"u", B, {+1, 0}, 2},
+					  });
+		apP.set(i, 0, tr);
+		apP.set(i, 1, br);
+		if (tr && br)
+			mod2Pix = PerspectiveTransform(Rectangle(apM[i] + 1, dim.y, 0.5), {*apP(0, 0), *tr, *br, *apP(0, 1)});
 	}
 
-	return SampleGrid(image, dim.x, dim.y, bestPT);
+	// estimate module size at module coordinates x/y based on current mod2Pix
+	auto estimateModuleSize = [&mod2Pix, &dim]() {
+		auto p0 = mod2Pix(centered(dim - PointF(3, 3)));
+		auto p1 = mod2Pix(centered(dim - PointF(2, 3)));
+		auto p2 = mod2Pix(centered(dim - PointF(3, 2)));
+		return std::min(distance(p0, p1), distance(p0, p2));
+	}();
+
+	std::optional<PointF> tr, br;
+
+	if (auto ap = LocateAlignmentPattern(image, estimateModuleSize, mod2Pix(centered(dim - PointF(3, 3))))) {
+		// estimate tr based on current mod2pix and deviation of ap from its expected position
+		auto delta = *ap - mod2Pix(centered(dim - PointF(3, 3)));
+		tr = mod2Pix(centered(PointI{dim.x - 1, 0})) + delta;
+		auto rect = Rectangle(dim.x, dim.y, 0.5);
+		rect[2] = rect[2] - PointF(2, 2);
+		mod2Pix = PerspectiveTransform(rect, {*apP(0, 0), *tr, *ap, *apP(0, 1)});
+		tr = grid.at({dim.x - 1, 0}, {-3, 3})
+					.find({
+						{"ld", B, {0, 0}, 2},
+						{"ld", W, {+1, -1}, R},
+						{"ru", WB, {-1, +1}, 1},
+					})
+					.value_or(*tr);
+		br = mod2Pix(centered(PointI{dim.x - 1, dim.y - 1}));
+	}
+
+	apP.set(apM.size() - 1, 0, tr);
+	apP.set(apM.size() - 1, 1, br);
+	if (tr && br)
+		mod2Pix = PerspectiveTransform(Rectangle(dim.x, dim.y, 0.5), {*apP(0, 0), *tr, *br, *apP(0, 1)});
+
+	return SampleGrid(image, dim.x, dim.y, mod2Pix, std::move(apP), apM, std::vector{0, dim.y - 1});
 }
 
 } // namespace ZXing::QRCode
