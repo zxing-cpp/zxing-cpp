@@ -48,6 +48,9 @@ open class ReaderOptions {
 	var tryDownscale: Boolean
 		get() = ZXing_ReaderOptions_getTryDownscale(cValue)
 		set(value) = ZXing_ReaderOptions_setTryDownscale(cValue, value)
+	var tryDenoise: Boolean
+		get() = ZXing_ReaderOptions_getTryDenoise(cValue)
+		set(value) = ZXing_ReaderOptions_setTryDenoise(cValue, value)
 	var tryInvert: Boolean
 		get() = ZXing_ReaderOptions_getTryInvert(cValue)
 		set(value) = ZXing_ReaderOptions_setTryInvert(cValue, value)

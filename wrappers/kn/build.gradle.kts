@@ -190,7 +190,6 @@ krossCompile {
                         "CMAKE_INSTALL_PREFIX" to installDirCmake,
                         "ZXING_READERS" to "ON",
                         "ZXING_WRITERS" to "ON",
-                        "ZXING_EXPERIMENTAL_API" to "ON",
                         "ZXING_USE_BUNDLED_ZINT" to "ON",
                         "ZXING_C_API" to "ON",
                     )

@@ -39,9 +39,7 @@ struct ReaderOptions::Data
 	bool tryRotate                : 1 = true;
 	bool tryInvert                : 1 = true;
 	bool tryDownscale             : 1 = true;
-#ifdef ZXING_EXPERIMENTAL_API
 	bool tryDenoise               : 1 = false;
-#endif
 	bool isPure                   : 1 = false;
 	bool validateOptionalChecksum : 1 = false;
 	bool returnErrors             : 1 = false;
@@ -86,9 +84,7 @@ ZX_PROPERTY(bool, tryHarder, setTryHarder)
 ZX_PROPERTY(bool, tryRotate, setTryRotate)
 ZX_PROPERTY(bool, tryInvert, setTryInvert)
 ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
-#ifdef ZXING_EXPERIMENTAL_API
 ZX_PROPERTY(bool, tryDenoise, setTryDenoise)
-#endif
 ZX_PROPERTY(Binarizer, binarizer, setBinarizer)
 ZX_PROPERTY(bool, isPure, setIsPure)
 ZX_PROPERTY(uint16_t, downscaleThreshold, setDownscaleThreshold)
@@ -269,7 +265,6 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 	}
 
 	std::unique_ptr<MultiFormatReader> closedReader;
-#ifdef ZXING_EXPERIMENTAL_API
 	using enum BarcodeFormat;
 	BarcodeFormats formatsBenefittingFromClosing = Aztec | DataMatrix | QRCode;
 	ReaderOptions closedOptions = opts;
@@ -277,7 +272,6 @@ Barcodes ReadBarcodes(const ImageView& _iv, const ReaderOptions& opts)
 		closedOptions.formats(opts.formats().empty() ? formatsBenefittingFromClosing : formatsBenefittingFromClosing & opts.formats());
 		closedReader = std::make_unique<MultiFormatReader>(closedOptions);
 	}
-#endif
 	LumImagePyramid pyramid(iv, opts.downscaleThreshold() * opts.tryDownscale(), opts.downscaleFactor());
 
 	Barcodes res;

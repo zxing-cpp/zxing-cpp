@@ -34,6 +34,7 @@ Window {
 		tryHarder: tryHarderSwitch.checked
 		tryInvert: tryInvertSwitch.checked
 		tryDownscale: tryDownscaleSwitch.checked
+		tryDenoise: tryDenoiseSwitch.checked
 		textMode: ZXing.TextMode.HRI
 
 		// callback with parameter 'barcodes', called for every successfully processed frame
@@ -217,6 +218,7 @@ Window {
 					Switch {id: tryHarderSwitch; text: qsTr("Try Harder"); checked: true }
 					Switch {id: tryInvertSwitch; text: qsTr("Try Invert"); checked: true }
 					Switch {id: tryDownscaleSwitch; text: qsTr("Try Downscale"); checked: true }
+					Switch {id: tryDenoiseSwitch; text: qsTr("Try Denoise"); checked: false }
 
 					RowLayout {
 						Label {

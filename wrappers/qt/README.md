@@ -213,6 +213,7 @@ reader.setTryRotate(bool)        // Try rotating image for better detection
 reader.setTryHarder(bool)        // Try harder to detect barcodes (slower)
 reader.setTryInvert(bool)        // Try inverting colors
 reader.setTryDownscale(bool)     // Try downscaling large images
+reader.setTryDenoise(bool)       // Try denoising images
 reader.setIsPure(bool)           // Assume image contains only a pure barcode
 reader.setReturnErrors(bool)     // Return failed reads with error info
 reader.setMaxThreadCount(int)    // Maximum worker threads for async processing

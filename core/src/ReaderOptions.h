@@ -116,10 +116,8 @@ public:
 	/// Try detecting code in downscaled images (depending on image size) (default: true).
 	ZX_PROPERTY(bool, tryDownscale, setTryDownscale)
 
-#ifdef ZXING_EXPERIMENTAL_API
-	/// Also try detecting code after denoising (currently morphological closing filter for 2D formats only).
+	/// Try detecting code after denoising (currently morphological closing filter for 2D formats only).
 	ZX_PROPERTY(bool, tryDenoise, setTryDenoise)
-#endif
 
 	/// Binarizer to use for grayscale to binary transformation (default: Binarizer::LocalAverage).
 	ZX_PROPERTY(Binarizer, binarizer, setBinarizer)

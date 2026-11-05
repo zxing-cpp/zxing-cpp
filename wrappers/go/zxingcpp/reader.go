@@ -38,6 +38,11 @@ func TryDownscale(v bool) ReaderOption {
 	return func(o *C.ZXing_ReaderOptions) { C.ZXing_ReaderOptions_setTryDownscale(o, C.bool(v)) }
 }
 
+// TryDenoise enables denoising.
+func TryDenoise(v bool) ReaderOption {
+	return func(o *C.ZXing_ReaderOptions) { C.ZXing_ReaderOptions_setTryDenoise(o, C.bool(v)) }
+}
+
 // IsPure indicates that the input contains a single perfectly aligned barcode (generated image).
 func IsPure(v bool) ReaderOption {
 	return func(o *C.ZXing_ReaderOptions) { C.ZXing_ReaderOptions_setIsPure(o, C.bool(v)) }

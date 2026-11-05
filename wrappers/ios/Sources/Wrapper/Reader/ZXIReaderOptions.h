@@ -34,6 +34,7 @@ typedef NS_ENUM(NSInteger, ZXITextMode) {
 @property(nonatomic) BOOL tryRotate;
 @property(nonatomic) BOOL tryInvert;
 @property(nonatomic) BOOL tryDownscale;
+@property(nonatomic) BOOL tryDenoise;
 @property(nonatomic) BOOL isPure;
 @property(nonatomic) ZXIBinarizer binarizer;
 @property(nonatomic) NSInteger downscaleFactor;

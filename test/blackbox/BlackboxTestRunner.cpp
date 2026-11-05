@@ -307,6 +307,7 @@ struct Test
 		opts.tryHarder(mode == TestMode::Slow);
 		opts.tryRotate(mode == TestMode::Slow);
 		opts.tryInvert(mode == TestMode::Slow);
+		// opts.tryDenoise(mode == TestMode::Slow);
 		opts.isPure(mode == TestMode::Pure);
 		if (mode == TestMode::Pure)
 			opts.binarizer(Binarizer::FixedThreshold);

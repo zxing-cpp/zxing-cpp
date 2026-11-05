@@ -85,8 +85,10 @@ internal class Dll
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryInvert(ReaderOptionsHandle opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryDownscale(ReaderOptionsHandle opts, bool tryDownscale);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryDownscale(ReaderOptionsHandle opts);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getIsPure(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryDenoise(ReaderOptionsHandle opts, bool tryDenoise);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryDenoise(ReaderOptionsHandle opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setIsPure(ReaderOptionsHandle opts, bool isPure);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getIsPure(ReaderOptionsHandle opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setValidateOptionalChecksum(ReaderOptionsHandle opts, bool validateOptionalChecksum);
 	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getValidateOptionalChecksum(ReaderOptionsHandle opts);
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setReturnErrors(ReaderOptionsHandle opts, bool returnErrors);
@@ -577,6 +579,13 @@ public class ReaderOptions : IDisposable
 	{
 		get => ZXing_ReaderOptions_getTryDownscale(_d);
 		set => ZXing_ReaderOptions_setTryDownscale(_d, value);
+	}
+
+	/// <summary>Also try detection after denoising.</summary>
+	public bool TryDenoise
+	{
+		get => ZXing_ReaderOptions_getTryDenoise(_d);
+		set => ZXing_ReaderOptions_setTryDenoise(_d, value);
 	}
 
 	/// <summary>Assume the image contains only a single, perfectly aligned barcode, nothing else.</summary>

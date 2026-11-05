@@ -18,7 +18,6 @@ if (PROJECT_IS_TOP_LEVEL)
     option (ZXING_READERS "Build with reader support (decoders)" ON)
     set    (ZXING_WRITERS "NEW" CACHE STRING "Build with old and/or new writer (encoder) backend (OFF/ON/OLD/NEW)")
     set    (ZXING_DEPENDENCIES "AUTO" CACHE STRING "Fetch from github or use locally installed (AUTO/GITHUB/LOCAL)")
-    option (ZXING_EXPERIMENTAL_API "Build with experimental API" ON)
 
     # resolve the symlink so GCC doesn't randomly prefix paths with /core or /wrappers/python/core
     file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/core" CORE_PATH)

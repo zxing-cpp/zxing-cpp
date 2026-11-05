@@ -309,6 +309,7 @@ private:
 		addCheckBox(_tryHarderCheck, tr("Try Harder"));
 		addCheckBox(_tryInvertCheck, tr("Try Invert"));
 		addCheckBox(_tryDownscaleCheck, tr("Try Downscale"));
+		addCheckBox(_tryDenoiseCheck, tr("Try Denoise"), false);
 		addCheckBox(_returnErrorsCheck, tr("Return Errors"), false);
 
 		// Format filter combobox
@@ -471,6 +472,7 @@ private:
 		_barcodeReader->setTryHarder(_tryHarderCheck->isChecked());
 		_barcodeReader->setTryInvert(_tryInvertCheck->isChecked());
 		_barcodeReader->setTryDownscale(_tryDownscaleCheck->isChecked());
+		_barcodeReader->setTryDenoise(_tryDenoiseCheck->isChecked());
 		_barcodeReader->setReturnErrors(_returnErrorsCheck->isChecked());
 	}
 
@@ -547,6 +549,7 @@ private:
 	QCheckBox* _tryHarderCheck = nullptr;
 	QCheckBox* _tryInvertCheck = nullptr;
 	QCheckBox* _tryDownscaleCheck = nullptr;
+	QCheckBox* _tryDenoiseCheck = nullptr;
 	QCheckBox* _returnErrorsCheck = nullptr;
 	QCheckBox* _autoPauseCheck = nullptr;
 

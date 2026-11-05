@@ -61,9 +61,7 @@ static void PrintUsage(const char* exePath)
 			  << "    -1         Print only file name, content/error on one line per file/barcode (implies '-mode Escaped')\n"
 			  << "    -symbol    Print the detected symbol (if available)\n"
 			  << "    -json      Print a complete JSON formatted serialization\n"
-#ifdef ZXING_EXPERIMENTAL_API
 			  << "    -denoise   Use extra denoiseing (closing operation)\n"
-#endif
 			  << "    -bytes     Write (only) the bytes content of the symbol(s) to stdout\n"
 			  << "    -pngout <file name>\n"
 			  << "               Write a copy of the input image with barcodes outlined by a green line\n"
@@ -94,10 +92,8 @@ static bool ParseOptions(int argc, char* argv[], ReaderOptions& options, CLI& cl
 			options.tryInvert(false);
 		} else if (is("-noscale")) {
 			options.tryDownscale(false);
-#ifdef ZXING_EXPERIMENTAL_API
 		} else if (is("-denoise")) {
 			options.tryDenoise(true);
-#endif
 		} else if (is("-single")) {
 			options.maxNumberOfSymbols(1);
 		} else if (is("-ispure")) {

@@ -627,6 +627,7 @@ impl BarcodeReader {
 	property!(ReaderOptions, TryRotate, bool);
 	property!(ReaderOptions, TryInvert, bool);
 	property!(ReaderOptions, TryDownscale, bool);
+	property!(ReaderOptions, TryDenoise, bool);
 	property!(ReaderOptions, IsPure, bool);
 	property!(ReaderOptions, ValidateOptionalChecksum, bool);
 	property!(ReaderOptions, ReturnErrors, bool);

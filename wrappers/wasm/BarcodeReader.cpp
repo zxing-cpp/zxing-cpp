@@ -38,6 +38,7 @@ std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::st
 			.tryRotate(tryHarder)
 			.tryInvert(tryHarder)
 			.tryDownscale(tryHarder)
+			.tryDenoise(tryHarder)
 			.formats(BarcodeFormatsFromString(format))
 //			.returnErrors(maxSymbols > 1)
 			.maxNumberOfSymbols(maxSymbols);

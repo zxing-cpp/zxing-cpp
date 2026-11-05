@@ -465,6 +465,7 @@ public:
 	ZQ_PROPERTY(bool, tryHarder, setTryHarder)
 	ZQ_PROPERTY(bool, tryInvert, setTryInvert)
 	ZQ_PROPERTY(bool, tryDownscale, setTryDownscale)
+	ZQ_PROPERTY(bool, tryDenoise, setTryDenoise)
 	ZQ_PROPERTY(bool, isPure, setIsPure)
 	ZQ_PROPERTY(bool, returnErrors, setReturnErrors)
 

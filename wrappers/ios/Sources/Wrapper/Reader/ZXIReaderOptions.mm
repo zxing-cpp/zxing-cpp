@@ -74,6 +74,14 @@
     self.cppOpts = self.cppOpts.setTryDownscale(tryDownscale);
 }
 
+-(BOOL)tryDenoise {
+    return self.cppOpts.tryDenoise();
+}
+
+-(void)setTryDenoise:(BOOL)tryDenoise {
+    self.cppOpts = self.cppOpts.setTryDenoise(tryDenoise);
+}
+
 -(BOOL)isPure {
     return self.cppOpts.isPure();
 }
