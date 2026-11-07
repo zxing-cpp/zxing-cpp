@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <fstream>
 #include <memory>
+#include <vector>
 
 #define USE_NEW_ALGORITHM
 
@@ -50,8 +51,8 @@ using T_t = uint8_t;
 /**
 * Applies a single threshold to a block of pixels.
 */
-static void ThresholdBlock(const uint8_t* __restrict luminances, int xoffset, int yoffset, T_t threshold, int rowStride,
-						   BitMatrix& matrix)
+[[maybe_unused]] static void ThresholdBlock(const uint8_t* __restrict luminances, int xoffset, int yoffset, T_t threshold,
+											int rowStride, BitMatrix& matrix)
 {
 	for (int y = yoffset; y < yoffset + BLOCK_SIZE; ++y) {
 		auto* src = luminances + y * rowStride + xoffset;
@@ -196,6 +197,34 @@ static Matrix<T_t> BlockThresholds(const ImageView iv)
 
 	Matrix<T_t> thresholds(subWidth, subHeight);
 
+#if defined(__AVX__) || defined(__ARM_NEON)
+	std::vector<uint8_t> mins(iv.width()), maxs(iv.width()); // min/max per column within the current row of blocks
+
+	for (int y = 0; y < subHeight; y++) {
+		int y0 = std::min(y * BLOCK_SIZE, iv.height() - BLOCK_SIZE);
+		std::copy_n(iv.data(0, y0), iv.width(), mins.data());
+		std::copy_n(iv.data(0, y0), iv.width(), maxs.data());
+		for (int yy = 1; yy < BLOCK_SIZE; yy++) {
+			const uint8_t* __restrict line = iv.data(0, y0 + yy);
+			for (int x = 0; x < iv.width(); x++) {
+				mins[x] = std::min(mins[x], line[x]);
+				maxs[x] = std::max(maxs[x], line[x]);
+			}
+		}
+
+		for (int x = 0; x < subWidth; x++) {
+			int x0 = std::min(x * BLOCK_SIZE, iv.width() - BLOCK_SIZE);
+			uint8_t min = mins[x0];
+			uint8_t max = maxs[x0];
+			for (int xx = 1; xx < BLOCK_SIZE; ++xx) {
+				min = std::min(min, mins[x0 + xx]);
+				max = std::max(max, maxs[x0 + xx]);
+			}
+
+			thresholds(x, y) = (max - min > MIN_DYNAMIC_RANGE) ? (int(max) + min) / 2 : 0;
+		}
+	}
+#else
 	for (int y = 0; y < subHeight; y++) {
 		int y0 = std::min(y * BLOCK_SIZE, iv.height() - BLOCK_SIZE);
 		for (int x = 0; x < subWidth; x++) {
@@ -211,7 +240,7 @@ static Matrix<T_t> BlockThresholds(const ImageView iv)
 			thresholds(x, y) = (max - min > MIN_DYNAMIC_RANGE) ? (int(max) + min) / 2 : 0;
 		}
 	}
-
+#endif
 	return thresholds;
 }
 
@@ -221,6 +250,37 @@ static Matrix<T_t> SmoothThresholds(Matrix<T_t>&& in)
 	Matrix<T_t> out(in.width(), in.height());
 
 	constexpr int R = WINDOW_SIZE / BLOCK_SIZE / 2;
+#if 1
+	// Use summed-area table for fast windowed sum and count calculations (can gain 8% speed in very select cases)
+	const int w = in.width(), h = in.height();
+	Matrix<int> sums(w + 1, h + 1), counts(w + 1, h + 1);
+	for (int y = 0; y < h; y++) {
+		const T_t* row = in.data() + y * w;
+		int rowSum = 0, rowCount = 0;
+		for (int x = 0; x < w; x++) {
+			rowSum += row[x];
+			rowCount += row[x] > 0;
+			sums(x + 1, y + 1) = sums(x + 1, y) + rowSum;
+			counts(x + 1, y + 1) = counts(x + 1, y) + rowCount;
+		}
+	}
+	auto window = [](const Matrix<int>& table, int left, int top) {
+		int x0 = left - R, x1 = left + R + 1, y0 = top - R, y1 = top + R + 1;
+		return table(x1, y1) - table(x1, y0) - table(x0, y1) + table(x0, y0);
+	};
+
+	T_t* dst = out.begin();
+	for (int y = 0; y < h; y++) {
+		int top = std::clamp(y, R, h - R - 1);
+		for (int x = 0; x < w; x++) {
+			int left = std::clamp(x, R, w - R - 1);
+			int t = in.data()[y * w + x];
+			int sum = t * 2 + window(sums, left, top);
+			int n = (t > 0) * 2 + window(counts, left, top);
+			*dst++ = n > 0 ? sum / n : 0;
+		}
+	}
+#else
 	for (int y = 0; y < in.height(); y++) {
 		for (int x = 0; x < in.width(); x++) {
 			int left = std::clamp(x, R, in.width() - R - 1);
@@ -241,6 +301,7 @@ static Matrix<T_t> SmoothThresholds(Matrix<T_t>&& in)
 			out(x, y) = n > 0 ? sum / n : 0;
 		}
 	}
+#endif
 
 	// flood fill any remaining gaps of (very large) no-contrast regions
 	auto last = out.begin() - 1;
@@ -264,21 +325,43 @@ static std::shared_ptr<BitMatrix> ThresholdImage(const ImageView iv, const Matri
 	Matrix<uint8_t> out(iv.width(), iv.height());
 #endif
 
+#if defined(__AVX__) || defined(__ARM_NEON)
+	// Apply the block-wise thresholds to the image to generate the binary matrix. Apply to image row by row for maximum
+	// vectorization efficiency.
+	std::vector<T_t> rowThresholds(iv.width());
+	for (int y = 0; y < thresholds.height(); y++) {
+		int y0 = std::min(y * BLOCK_SIZE, iv.height() - BLOCK_SIZE);
+		for (int x = 0; x < thresholds.width(); x++)
+			std::fill_n(rowThresholds.data() + std::min(x * BLOCK_SIZE, iv.width() - BLOCK_SIZE), BLOCK_SIZE,
+						thresholds(x, y));
+
+		for (int yy = y0; yy < y0 + BLOCK_SIZE; ++yy) {
+			// TODO: fix pixelStride > 1 case
+			const uint8_t* __restrict src = iv.data(0, yy);
+			const T_t* __restrict thr = rowThresholds.data();
+			auto* __restrict dst = matrix->row(yy).begin();
+			for (int x = 0; x < iv.width(); ++x)
+				dst[x] = src[x] <= thr[x] ? BitMatrix::SET_V : BitMatrix::UNSET_V;
+		}
+	}
+#else
 	for (int y = 0; y < thresholds.height(); y++) {
 		int yoffset = std::min(y * BLOCK_SIZE, iv.height() - BLOCK_SIZE);
 		for (int x = 0; x < thresholds.width(); x++) {
 			int xoffset = std::min(x * BLOCK_SIZE, iv.width() - BLOCK_SIZE);
 			ThresholdBlock(iv.data(), xoffset, yoffset, thresholds(x, y), iv.rowStride(), *matrix);
-
-#ifdef PRINT_DEBUG
-			for (int yy = 0; yy < 8; ++yy)
-				for (int xx = 0; xx < 8; ++xx)
-					out.set(xoffset + xx, yoffset + yy, thresholds(x, y));
-#endif
 		}
 	}
+#endif
 
 #ifdef PRINT_DEBUG
+	for (int y = 0; y < thresholds.height(); y++)
+		for (int x = 0; x < thresholds.width(); x++)
+			for (int yy = 0; yy < BLOCK_SIZE; ++yy)
+				for (int xx = 0; xx < BLOCK_SIZE; ++xx)
+					out.set(std::min(x * BLOCK_SIZE, iv.width() - BLOCK_SIZE) + xx,
+							std::min(y * BLOCK_SIZE, iv.height() - BLOCK_SIZE) + yy, thresholds(x, y));
+
 	std::ofstream file("thresholds_new.pnm");
 	file << "P5\n" << out.width() << ' ' << out.height() << "\n255\n";
 	file.write(reinterpret_cast<const char*>(out.data()), out.size());
