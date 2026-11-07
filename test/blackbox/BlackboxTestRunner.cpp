@@ -454,6 +454,8 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 										})))
 			directories.push_back(entry.path());
 	std::ranges::sort(directories);
+	if (directories.empty())
+		directories.push_back(testPathPrefix);
 
 	auto startTime = std::chrono::steady_clock::now();
 	for (const auto& directory : directories)
