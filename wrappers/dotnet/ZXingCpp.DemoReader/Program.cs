@@ -15,36 +15,41 @@ public static class MagickImageBarcodeReader
 		if (img.DetermineBitDepth() < 8)
 			img.SetBitDepth(8);
 		var bytes = img.ToByteArray(MagickFormat.Gray);
-		var iv = new ImageView(bytes, (int)img.Width, (int)img.Height, ImageFormat.Lum);
-		return BarcodeReader.Read(iv, opts);
+		return BarcodeReader.Read(bytes, (int)img.Width, (int)img.Height, ImageFormat.Lum, 0, 0, opts);
 	}
 
-	public static Barcode[] From(this BarcodeReader reader, MagickImage img) => Read(img, reader);
+	public static Barcode[] Read(this BarcodeReader reader, MagickImage img) => Read(img, reader);
 }
 
 public static class SkBitmapBarcodeReader
 {
 	public static Barcode[] Read(SKBitmap img, ReaderOptions? opts = null)
 	{
-		var format = img.Info.ColorType switch
-		{
-			SKColorType.Gray8 => ImageFormat.Lum,
-			SKColorType.Rgba8888 => ImageFormat.RGBA,
-			SKColorType.Bgra8888 => ImageFormat.BGRA,
-			_ => ImageFormat.None,
-		};
-		if (format == ImageFormat.None)
-		{
-			if (!img.CanCopyTo(SKColorType.Gray8))
-				throw new Exception("Incompatible SKColorType");
-			img = img.Copy(SKColorType.Gray8);
-			format = ImageFormat.Lum;
+		SKBitmap? converted = null;
+		try {
+			var format = img.Info.ColorType switch
+			{
+				SKColorType.Gray8 => ImageFormat.Lum,
+				SKColorType.Rgba8888 => ImageFormat.RGBA,
+				SKColorType.Bgra8888 => ImageFormat.BGRA,
+				_ => ImageFormat.None,
+			};
+			if (format == ImageFormat.None)
+			{
+				if (!img.CanCopyTo(SKColorType.Gray8))
+					throw new Exception("Incompatible SKColorType");
+				img = converted = img.Copy(SKColorType.Gray8);
+				format = ImageFormat.Lum;
+			}
+			var size = checked(img.RowBytes * img.Info.Height);
+			return BarcodeReader.Read(img.GetPixels(), size, img.Info.Width, img.Info.Height, format, img.RowBytes, 0, opts);
+		} finally {
+			GC.KeepAlive(img);
+			converted?.Dispose();
 		}
-		var iv = new ImageView(img.GetPixels(), img.Info.Width, img.Info.Height, format);
-		return BarcodeReader.Read(iv, opts);
 	}
 
-	public static Barcode[] From(this BarcodeReader reader, SKBitmap img) => Read(img, reader);
+	public static Barcode[] Read(this BarcodeReader reader, SKBitmap img) => Read(img, reader);
 }
 
 public class Program
@@ -56,19 +61,19 @@ public class Program
 #else
 		var img = SKBitmap.Decode(args[0]);
 #endif
-		Console.WriteLine(img);
-
-		var readBarcodes = new BarcodeReader() {
+		var reader = new BarcodeReader() {
 			TryInvert = false,
 			ReturnErrors = true,
 		};
 
 		if (args.Length >= 2)
-			readBarcodes.Formats = BarcodeFormats.Parse(args[1]);
+			reader.Formats = BarcodeFormats.Parse(args[1]);
 		else 
-			readBarcodes.Formats = BarcodeFormat.AllReadable;
+			reader.Formats = BarcodeFormat.AllReadable;
 
-		foreach (var b in readBarcodes.From(img))
+		foreach (var b in reader.Read(img)) {
 			Console.WriteLine($"{b.Format} ({b.Symbology} / {b.ContentType}): {b.Text} / [{string.Join(", ", b.Bytes)}] {b.ErrorMsg}");
+			b.Dispose();
+		}
 	}
 }

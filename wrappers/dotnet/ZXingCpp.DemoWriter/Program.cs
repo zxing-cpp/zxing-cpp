@@ -34,9 +34,9 @@ public class Program
 			return;
 		}
 
-		var bc = new Barcode(text, new CreatorOptions(format, "EcLevel=50%"));
+		using var bc = new Barcode(text, new CreatorOptions(format, "EcLevel=50%"));
 
-		var img = bc.ToImage();
+		using var img = bc.ToImage();
 		Console.WriteLine($"{img.Data}, {img.Width}, {img.Height}, {img.ToArray()}");
 
 		if (fn.EndsWith(".svg"))

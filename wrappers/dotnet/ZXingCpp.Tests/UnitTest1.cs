@@ -1,5 +1,7 @@
 using Xunit;
 using System.Text;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using ZXingCpp;
 
 namespace ZXingCpp.Tests;
@@ -20,24 +22,160 @@ public class UnitTest1
 	}
 
 	[Fact]
-	public void InvalidImageView()
+	public void InvalidImageBuffers()
 	{
-		Assert.Throws<Exception>(() => new ImageView(new byte[0], 1, 1, ImageFormat.Lum));
-		Assert.Throws<Exception>(() => new ImageView(new byte[1], 1, 1, ImageFormat.Lum, 2));
+		Assert.Throws<Exception>(() => BarcodeReader.Read(Array.Empty<byte>(), 1, 1, ImageFormat.Lum));
+		var error = Assert.Throws<Exception>(() => BarcodeReader.Read(new byte[1], 1, 1, ImageFormat.Lum, rowStride: 2));
+		Assert.Contains("out of bounds", error.Message);
+		Assert.Contains("NULL pointer", Assert.Throws<Exception>(() => BarcodeReader.Read(IntPtr.Zero, 1, 1, 1, ImageFormat.Lum)).Message);
+	}
+
+	[Fact]
+	public void InvalidBarcodeCreationReportsNativeError()
+	{
+		using var options = new CreatorOptions(BarcodeFormat.None);
+		var error = Assert.Throws<Exception>(() => new Barcode("hello", options));
+		Assert.Contains("Unsupported barcode format", error.Message);
+	}
+
+	private static byte[] Ean8Pixels() => "0000101000101101011110111101011011101010100111011100101000100101110010100000"
+		.Select(value => (byte)(value == '0' ? 255 : 0)).ToArray();
+
+	[MethodImpl(MethodImplOptions.NoInlining)]
+	private static (byte[] Buffer, WeakReference<byte[]> WeakBuffer) CreateManagedBuffer()
+	{
+		var pixels = Ean8Pixels();
+		return (pixels, new WeakReference<byte[]>(pixels));
+	}
+
+	[Fact]
+	public void ReadArrayAfterCollection()
+	{
+		var (pixels, weakBuffer) = CreateManagedBuffer();
+		GC.Collect(2, GCCollectionMode.Forced, true, true);
+		GC.WaitForPendingFinalizers();
+		Assert.True(weakBuffer.TryGetTarget(out _));
+
+		using var reader = new BarcodeReader { Binarizer = Binarizer.BoolCast };
+		var barcodes = reader.Read(pixels, pixels.Length, 1, ImageFormat.Lum);
+		using var barcode = Assert.Single(barcodes);
+		Assert.Equal("96385074", barcode.Text);
+
+		Array.Fill(pixels, (byte)255);
+		Assert.Empty(reader.Read(pixels, pixels.Length, 1, ImageFormat.Lum));
+	}
+
+	[Fact]
+	public void ReadDuringCollections()
+	{
+		var pixels = Ean8Pixels();
+		using var cancellation = new CancellationTokenSource();
+		using var started = new ManualResetEventSlim();
+		var collector = Task.Run(() => {
+			started.Set();
+			while (!cancellation.IsCancellationRequested) {
+				GC.Collect(2, GCCollectionMode.Forced, true, true);
+				GC.WaitForPendingFinalizers();
+			}
+		});
+		started.Wait();
+		try {
+			for (int index = 0; index < 100; ++index) {
+				using var reader = new BarcodeReader { Binarizer = Binarizer.BoolCast };
+				var results = reader.Read(pixels, pixels.Length, 1, ImageFormat.Lum);
+				using var barcode = Assert.Single(results);
+				Assert.Equal("96385074", barcode.Text);
+			}
+		} finally {
+			cancellation.Cancel();
+			collector.GetAwaiter().GetResult();
+		}
+	}
+
+	[Fact]
+	public void DeprecatedImageViewStillWorksWhenPinned()
+	{
+		var pixels = Ean8Pixels();
+		var pin = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+		try {
+#pragma warning disable CS0618
+			var view = new ImageView(pixels.AsSpan(), pixels.Length, 1, ImageFormat.Lum);
+			using var reader = new BarcodeReader { Binarizer = Binarizer.BoolCast };
+			using var barcode = Assert.Single(reader.From(view));
+			Assert.Equal("96385074", barcode.Text);
+#pragma warning restore CS0618
+		} finally {
+			pin.Free();
+		}
+	}
+
+	[Fact]
+	public void ReadCallerOwnedPointer()
+	{
+		var pixels = Ean8Pixels();
+		var pointer = Marshal.AllocHGlobal(pixels.Length);
+		try {
+			Marshal.Copy(pixels, 0, pointer, pixels.Length);
+			using var reader = new BarcodeReader { Binarizer = Binarizer.BoolCast };
+			GC.Collect(2, GCCollectionMode.Forced, true, true);
+			using var barcode = Assert.Single(reader.Read(pointer, pixels.Length, pixels.Length, 1, ImageFormat.Lum));
+			Assert.Equal("96385074", barcode.Text);
+
+			Array.Fill(pixels, (byte)255);
+			Marshal.Copy(pixels, 0, pointer, pixels.Length);
+			Assert.Empty(reader.Read(pointer, pixels.Length, pixels.Length, 1, ImageFormat.Lum));
+		} finally {
+			Marshal.FreeHGlobal(pointer);
+		}
+	}
+
+	[Fact]
+	public void OptionalOptionsCanBeOmitted()
+	{
+		using var barcode = new Barcode("hello", BarcodeFormat.DataMatrix);
+		using var image = barcode.ToImage();
+		Assert.NotEmpty(image.ToArray());
+		Assert.NotEmpty(barcode.ToSVG());
+		var pixels = image.ToArray();
+		var results = BarcodeReader.Read(pixels, image.Width, image.Height, image.Format);
+		try {
+			Assert.Equal("hello", Assert.Single(results).Text);
+		} finally {
+			foreach (var result in results)
+				result.Dispose();
+		}
+	}
+
+	[Fact]
+	public void DisposedHandlesRejectFurtherUse()
+	{
+#pragma warning disable CS0618
+		var view = new ImageView(new byte[1], 1, 1, ImageFormat.Lum);
+		view.Dispose();
+		view.Dispose();
+		Assert.Throws<ObjectDisposedException>(() => BarcodeReader.Read(view));
+#pragma warning restore CS0618
+
+		var options = new ReaderOptions();
+		options.Dispose();
+		options.Dispose();
+		Assert.Throws<ObjectDisposedException>(() => options.TryHarder);
+
+		var barcode = new Barcode("hello", BarcodeFormat.DataMatrix);
+		barcode.Dispose();
+		barcode.Dispose();
+		Assert.Throws<ObjectDisposedException>(() => barcode.Text);
 	}
 
 	[Fact]
 	public void Read()
 	{
-		var data = new List<byte>();
-		foreach (var v in "0000101000101101011110111101011011101010100111011100101000100101110010100000")
-			data.Add((byte)(v == '0' ? 255 : 0));
+		var data = Ean8Pixels();
 
-		var iv = new ImageView(data.ToArray(), data.Count, 1, ImageFormat.Lum);
 		var br = new BarcodeReader {
 			Binarizer = Binarizer.BoolCast,
 		};
-		var res = br.From(iv);
+		var res = br.Read(data, data.Length, 1, ImageFormat.Lum);
 
 		var expected = "96385074";
 

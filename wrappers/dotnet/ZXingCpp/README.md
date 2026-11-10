@@ -19,18 +19,26 @@ SkiaSharp is used here because it works consistently across Windows, Linux, and 
 using SkiaSharp;
 using ZXingCpp;
 
-var img = SKBitmap.Decode(args[0]).Copy(SKColorType.Gray8);
-var iv = new ImageView(img.GetPixels(), img.Info.Width, img.Info.Height, ImageFormat.Lum);
+using var img = SKBitmap.Decode(args[0]).Copy(SKColorType.Gray8);
 
-var readBarcodes = new BarcodeReader {
+using var reader = new BarcodeReader {
     Formats = args.Length > 1 ? BarcodeFormats.Parse(args[1]) : BarcodeFormat.All,
     TryInvert = false,
     // see the ReaderOptions for more available options
 };
 
-foreach (var b in readBarcodes.From(iv))
+var barcodes = reader.Read(img.GetPixels(), img.RowBytes * img.Info.Height,
+                           img.Info.Width, img.Info.Height, ImageFormat.Lum, img.RowBytes);
+foreach (var b in barcodes) {
     Console.WriteLine($"{b.Format}: {b.Text}");
+    b.Dispose();
+}
 ```
+
+`BarcodeReader.Read` accepts byte arrays on all targets and `ReadOnlySpan<byte>` on .NET 5 and later.
+These overloads do not copy pixels; managed buffers are pinned only for the synchronous scan. Do not modify the pixels during a scan.
+For native image buffers, pass the pointer, available byte count, dimensions, format, and row stride. The caller must keep the
+buffer and its owner alive and unchanged until the call returns. Dispose readers, options, images, and returned barcodes when finished.
 
 Executing this sample code from the command line would look like this:
 ```sh

@@ -15,39 +15,94 @@ using System.Linq;
 
 using static Dll;
 
+internal abstract class NativeHandle : SafeHandle
+{
+	internal static readonly NativeHandle Null = new NullHandle();
+	protected NativeHandle(bool ownsHandle = true) : base(IntPtr.Zero, ownsHandle) {}
+	public override bool IsInvalid => handle == IntPtr.Zero;
+}
+
+internal sealed class NullHandle : NativeHandle
+{
+	internal NullHandle() : base(false) {}
+	protected override bool ReleaseHandle() => true;
+}
+
+internal sealed class ReaderOptionsHandle : NativeHandle
+{
+	public ReaderOptionsHandle() {}
+	protected override bool ReleaseHandle() { Dll.ZXing_ReaderOptions_delete(handle); return true; }
+}
+
+internal sealed class CreatorOptionsHandle : NativeHandle
+{
+	public CreatorOptionsHandle() {}
+	protected override bool ReleaseHandle() { Dll.ZXing_CreatorOptions_delete(handle); return true; }
+}
+
+internal sealed class WriterOptionsHandle : NativeHandle
+{
+	public WriterOptionsHandle() {}
+	protected override bool ReleaseHandle() { Dll.ZXing_WriterOptions_delete(handle); return true; }
+}
+
+internal sealed class ImageViewHandle : NativeHandle
+{
+	public ImageViewHandle() {}
+	protected override bool ReleaseHandle() { Dll.ZXing_ImageView_delete(handle); return true; }
+}
+
+internal sealed class ImageHandle : NativeHandle
+{
+	public ImageHandle() {}
+	protected override bool ReleaseHandle() { Dll.ZXing_Image_delete(handle); return true; }
+}
+
+internal sealed class BarcodeHandle : NativeHandle
+{
+	public BarcodeHandle() {}
+	protected override bool ReleaseHandle() { Dll.ZXing_Barcode_delete(handle); return true; }
+}
+
+internal sealed class BarcodesHandle : NativeHandle
+{
+	public BarcodesHandle() {}
+	protected override bool ReleaseHandle() { Dll.ZXing_Barcodes_delete(handle); return true; }
+}
+
 internal class Dll
 {
 	private const string DllName = "ZXing";
 
-	[DllImport(DllName)] public static extern IntPtr ZXing_ReaderOptions_new();
+	[DllImport(DllName)] public static extern ReaderOptionsHandle ZXing_ReaderOptions_new();
 	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_delete(IntPtr opts);
 
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryHarder(IntPtr opts, bool tryHarder);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryHarder(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryRotate(IntPtr opts, bool tryRotate);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryRotate(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryInvert(IntPtr opts, bool tryInvert);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryInvert(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryDownscale(IntPtr opts, bool tryDownscale);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryDownscale(IntPtr opts);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getIsPure(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setIsPure(IntPtr opts, bool isPure);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setValidateOptionalChecksum(IntPtr opts, bool validateOptionalChecksum);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getValidateOptionalChecksum(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setReturnErrors(IntPtr opts, bool returnErrors);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getReturnErrors(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setFormats(IntPtr opts, BarcodeFormat[] formats, int count);
-	[DllImport(DllName)] public static extern IntPtr ZXing_ReaderOptions_getFormats(IntPtr opts, out int count);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setBinarizer(IntPtr opts, Binarizer binarizer);
-	[DllImport(DllName)] public static extern Binarizer ZXing_ReaderOptions_getBinarizer(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setEanAddOnSymbol(IntPtr opts, EanAddOnSymbol eanAddOnSymbol);
-	[DllImport(DllName)] public static extern EanAddOnSymbol ZXing_ReaderOptions_getEanAddOnSymbol(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTextMode(IntPtr opts, TextMode textMode);
-	[DllImport(DllName)] public static extern TextMode ZXing_ReaderOptions_getTextMode(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setMinLineCount(IntPtr opts, int n);
-	[DllImport(DllName)] public static extern int ZXing_ReaderOptions_getMinLineCount(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setMaxNumberOfSymbols(IntPtr opts, int n);
-	[DllImport(DllName)] public static extern int ZXing_ReaderOptions_getMaxNumberOfSymbols(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryHarder(ReaderOptionsHandle opts, bool tryHarder);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryHarder(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryRotate(ReaderOptionsHandle opts, bool tryRotate);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryRotate(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryInvert(ReaderOptionsHandle opts, bool tryInvert);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryInvert(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTryDownscale(ReaderOptionsHandle opts, bool tryDownscale);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getTryDownscale(ReaderOptionsHandle opts);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getIsPure(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setIsPure(ReaderOptionsHandle opts, bool isPure);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setValidateOptionalChecksum(ReaderOptionsHandle opts, bool validateOptionalChecksum);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getValidateOptionalChecksum(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setReturnErrors(ReaderOptionsHandle opts, bool returnErrors);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_ReaderOptions_getReturnErrors(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setFormats(ReaderOptionsHandle opts, BarcodeFormat[] formats, int count);
+	[DllImport(DllName)] public static extern IntPtr ZXing_ReaderOptions_getFormats(ReaderOptionsHandle opts, out int count);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setBinarizer(ReaderOptionsHandle opts, Binarizer binarizer);
+	[DllImport(DllName)] public static extern Binarizer ZXing_ReaderOptions_getBinarizer(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setEanAddOnSymbol(ReaderOptionsHandle opts, EanAddOnSymbol eanAddOnSymbol);
+	[DllImport(DllName)] public static extern EanAddOnSymbol ZXing_ReaderOptions_getEanAddOnSymbol(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setTextMode(ReaderOptionsHandle opts, TextMode textMode);
+	[DllImport(DllName)] public static extern TextMode ZXing_ReaderOptions_getTextMode(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setMinLineCount(ReaderOptionsHandle opts, int n);
+	[DllImport(DllName)] public static extern int ZXing_ReaderOptions_getMinLineCount(ReaderOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_ReaderOptions_setMaxNumberOfSymbols(ReaderOptionsHandle opts, int n);
+	[DllImport(DllName)] public static extern int ZXing_ReaderOptions_getMaxNumberOfSymbols(ReaderOptionsHandle opts);
 
 	[DllImport(DllName)] public static extern IntPtr ZXing_PositionToString(Position position);
 	[DllImport(DllName)] public static extern BarcodeFormat ZXing_BarcodeFormatSymbology(BarcodeFormat format);
@@ -58,66 +113,67 @@ internal class Dll
 	[DllImport(DllName)] public static extern IntPtr ZXing_BarcodeFormatsFromString(string str, out int count);
 	[DllImport(DllName)] public static extern IntPtr ZXing_BarcodeFormatsToString(BarcodeFormat[] format, int count);
 
-	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new(IntPtr data, int width, int height, ImageFormat format, int rowStride, int pixStride);
-	[DllImport(DllName)] public static extern IntPtr ZXing_ImageView_new_checked(ref byte data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride);
+	[DllImport(DllName)] public static extern ImageViewHandle ZXing_ImageView_new(IntPtr data, int width, int height, ImageFormat format, int rowStride, int pixStride);
+	[DllImport(DllName)] public static extern ImageViewHandle ZXing_ImageView_new_checked(IntPtr data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride);
+	//[DllImport(DllName)] public static extern ImageViewHandle ZXing_ImageView_new_checked(ref byte data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride);
 	[DllImport(DllName)] public static extern void ZXing_ImageView_delete(IntPtr iv);
 
 	[DllImport(DllName)] public static extern void ZXing_Image_delete(IntPtr img);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Image_data(IntPtr img);
-	[DllImport(DllName)] public static extern int ZXing_Image_width(IntPtr img);
-	[DllImport(DllName)] public static extern int ZXing_Image_height(IntPtr img);
-	[DllImport(DllName)] public static extern ImageFormat ZXing_Image_format(IntPtr img);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Image_data(ImageHandle img);
+	[DllImport(DllName)] public static extern int ZXing_Image_width(ImageHandle img);
+	[DllImport(DllName)] public static extern int ZXing_Image_height(ImageHandle img);
+	[DllImport(DllName)] public static extern ImageFormat ZXing_Image_format(ImageHandle img);
 
-	[DllImport(DllName)] public static extern IntPtr ZXing_ReadBarcodes(IntPtr iv, IntPtr opts);
+	[DllImport(DllName)] public static extern BarcodesHandle ZXing_ReadBarcodes(ImageViewHandle iv, NativeHandle opts);
 	[DllImport(DllName)] public static extern void ZXing_Barcode_delete(IntPtr barcode);
 	[DllImport(DllName)] public static extern void ZXing_Barcodes_delete(IntPtr barcodes);
-	[DllImport(DllName)] public static extern int ZXing_Barcodes_size(IntPtr barcodes);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcodes_move(IntPtr barcodes, int i);
+	[DllImport(DllName)] public static extern int ZXing_Barcodes_size(BarcodesHandle barcodes);
+	[DllImport(DllName)] public static extern BarcodeHandle ZXing_Barcodes_move(BarcodesHandle barcodes, int i);
 
-	[DllImport(DllName)] public static extern IntPtr ZXing_CreatorOptions_new(BarcodeFormat format);
+	[DllImport(DllName)] public static extern CreatorOptionsHandle ZXing_CreatorOptions_new(BarcodeFormat format);
 	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_delete(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setFormat(IntPtr opts, BarcodeFormat format);
-	[DllImport(DllName)] public static extern BarcodeFormat ZXing_CreatorOptions_getFormat(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setOptions(IntPtr opts, string options);
-	[DllImport(DllName)] public static extern IntPtr ZXing_CreatorOptions_getOptions(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setFormat(CreatorOptionsHandle opts, BarcodeFormat format);
+	[DllImport(DllName)] public static extern BarcodeFormat ZXing_CreatorOptions_getFormat(CreatorOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_CreatorOptions_setOptions(CreatorOptionsHandle opts, string options);
+	[DllImport(DllName)] public static extern IntPtr ZXing_CreatorOptions_getOptions(CreatorOptionsHandle opts);
 
-	[DllImport(DllName)] public static extern IntPtr ZXing_WriterOptions_new();
+	[DllImport(DllName)] public static extern WriterOptionsHandle ZXing_WriterOptions_new();
 	[DllImport(DllName)] public static extern void ZXing_WriterOptions_delete(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setScale(IntPtr opts, int scale);
-	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getScale(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setRotate(IntPtr opts, int rotate);
-	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getRotate(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setAddHRT(IntPtr opts, bool addHRT);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getAddHRT(IntPtr opts);
-	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setAddQuietZones(IntPtr opts, bool addQuietZones);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getAddQuietZones(IntPtr opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setScale(WriterOptionsHandle opts, int scale);
+	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getScale(WriterOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setRotate(WriterOptionsHandle opts, int rotate);
+	[DllImport(DllName)] public static extern int ZXing_WriterOptions_getRotate(WriterOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setAddHRT(WriterOptionsHandle opts, bool addHRT);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getAddHRT(WriterOptionsHandle opts);
+	[DllImport(DllName)] public static extern void ZXing_WriterOptions_setAddQuietZones(WriterOptionsHandle opts, bool addQuietZones);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_WriterOptions_getAddQuietZones(WriterOptionsHandle opts);
 
-	[DllImport(DllName)] public static extern IntPtr ZXing_CreateBarcodeFromText(string data, int size, IntPtr opts);
-	[DllImport(DllName)] public static extern IntPtr ZXing_CreateBarcodeFromBytes(byte[] data, int size, IntPtr opts);
+	[DllImport(DllName)] public static extern BarcodeHandle ZXing_CreateBarcodeFromText(string data, int size, CreatorOptionsHandle opts);
+	[DllImport(DllName)] public static extern BarcodeHandle ZXing_CreateBarcodeFromBytes(byte[] data, int size, CreatorOptionsHandle opts);
 
-	[DllImport(DllName)] public static extern IntPtr ZXing_WriteBarcodeToSVG(IntPtr barcode, IntPtr opts);
-	[DllImport(DllName)] public static extern IntPtr ZXing_WriteBarcodeToImage(IntPtr barcode, IntPtr opts);
+	[DllImport(DllName)] public static extern IntPtr ZXing_WriteBarcodeToSVG(BarcodeHandle barcode, NativeHandle opts);
+	[DllImport(DllName)] public static extern ImageHandle ZXing_WriteBarcodeToImage(BarcodeHandle barcode, NativeHandle opts);
 
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isValid(IntPtr barcode);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_errorMsg(IntPtr barcode);
-	[DllImport(DllName)] public static extern ErrorType ZXing_Barcode_errorType(IntPtr barcode);
-	[DllImport(DllName)] public static extern BarcodeFormat ZXing_Barcode_format(IntPtr barcode);
-	[DllImport(DllName)] public static extern BarcodeFormat ZXing_Barcode_symbology(IntPtr barcode);
-	[DllImport(DllName)] public static extern ContentType ZXing_Barcode_contentType(IntPtr barcode);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytes(IntPtr barcode, out int len);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytesECI(IntPtr barcode, out int len);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_text(IntPtr barcode);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_symbologyIdentifier(IntPtr barcode);
-	[DllImport(DllName)] public static extern Position ZXing_Barcode_position(IntPtr barcode);
-	[DllImport(DllName)] public static extern int ZXing_Barcode_rotation(IntPtr barcode);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_hasECI(IntPtr barcode);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isInverted(IntPtr barcode);
-	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isMirrored(IntPtr barcode);
-	[DllImport(DllName)] public static extern int ZXing_Barcode_lineCount(IntPtr barcode);
-	[DllImport(DllName)] public static extern int ZXing_Barcode_sequenceIndex(IntPtr barcode);
-	[DllImport(DllName)] public static extern int ZXing_Barcode_sequenceSize(IntPtr barcode);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_sequenceId(IntPtr barcode);
-	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_extra(IntPtr barcode, string? key);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isValid(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_errorMsg(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern ErrorType ZXing_Barcode_errorType(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern BarcodeFormat ZXing_Barcode_format(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern BarcodeFormat ZXing_Barcode_symbology(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern ContentType ZXing_Barcode_contentType(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytes(BarcodeHandle barcode, out int len);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_bytesECI(BarcodeHandle barcode, out int len);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_text(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_symbologyIdentifier(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern Position ZXing_Barcode_position(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern int ZXing_Barcode_rotation(BarcodeHandle barcode);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_hasECI(BarcodeHandle barcode);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isInverted(BarcodeHandle barcode);
+	[DllImport(DllName)] [return:MarshalAs(UnmanagedType.I1)] public static extern bool ZXing_Barcode_isMirrored(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern int ZXing_Barcode_lineCount(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern int ZXing_Barcode_sequenceIndex(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern int ZXing_Barcode_sequenceSize(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_sequenceId(BarcodeHandle barcode);
+	[DllImport(DllName)] public static extern IntPtr ZXing_Barcode_extra(BarcodeHandle barcode, string? key);
 
 	[DllImport(DllName)] public static extern void ZXing_free(IntPtr opts);
 	[DllImport(DllName)] public static extern IntPtr ZXing_LastErrorMsg();
@@ -128,6 +184,13 @@ internal class Dll
 		if (ptr == IntPtr.Zero)
 			throw new Exception(msg ?? MarshalAsString(ZXing_LastErrorMsg()));
 		return ptr;
+	}
+
+	public static T CheckError<T>(T handle, string? msg = null) where T : SafeHandle
+	{
+		if (handle.IsInvalid)
+			throw new Exception(msg ?? MarshalAsString(ZXing_LastErrorMsg()));
+		return handle;
 	}
 
 	public static string MarshalAsString(IntPtr ptr)
@@ -148,9 +211,9 @@ internal class Dll
 		return res;
 	}
 
-	public delegate IntPtr RetBytesFunc(IntPtr ptr, out int len);
+	public delegate IntPtr RetBytesFunc(BarcodeHandle ptr, out int len);
 
-	public static byte[] MarshalAsBytes(RetBytesFunc func, IntPtr d)
+	public static byte[] MarshalAsBytes(RetBytesFunc func, BarcodeHandle d)
 	{
 		IntPtr ptr = CheckError(func(d, out int len), "ZXing C-API returned a NULL byte*.");
 		byte[] res = new byte[len];
@@ -341,24 +404,57 @@ public struct Position
 };
 
 /// <summary>
-/// Non-owning view into image data for barcode detection. Does not copy pixel data.
+/// Obsolete native image view. Prefer the buffer overloads on <see cref="BarcodeReader"/>.
 /// </summary>
-public class ImageView
+[Obsolete("Use BarcodeReader.Read overloads that take image data directly.")]
+public class ImageView : IDisposable
 {
-	internal IntPtr _d;
+	internal readonly ImageViewHandle _d;
+	private GCHandle _pin;
+
+	/// <summary>Creates a native view over the array. The array remains pinned until this view is disposed.</summary>
+	public ImageView(byte[] data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
+	{
+		if (data == null)
+			throw new ArgumentNullException(nameof(data));
+		_pin = GCHandle.Alloc(data, GCHandleType.Pinned);
+		try {
+			_d = CheckError(ZXing_ImageView_new_checked(_pin.AddrOfPinnedObject(), data.Length, width, height, format, rowStride, pixStride));
+		} catch {
+			_pin.Free();
+			throw;
+		}
+	}
 
 #if NET
-	public ImageView(ReadOnlySpan<byte> data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
-		=> _d = CheckError(ZXing_ImageView_new_checked(ref MemoryMarshal.GetReference(data), data.Length, width, height, format, rowStride, pixStride));
-#else
-	public ImageView(byte[] data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
-		=> _d = CheckError(ZXing_ImageView_new_checked(ref data[0], data.Length, width, height, format, rowStride, pixStride));
+	/// <summary>Creates a non-owning view. The caller must keep the span's memory pinned and alive until this view is disposed.</summary>
+	public unsafe ImageView(ReadOnlySpan<byte> data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
+	{
+		fixed (byte* pixels = data)
+			_d = CheckError(ZXing_ImageView_new_checked((IntPtr)pixels, data.Length, width, height, format, rowStride, pixStride));
+	}
 #endif
 
+	/// <summary>Creates a non-owning view. The caller must keep the buffer valid until this view is disposed.</summary>
 	public ImageView(IntPtr data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
 		=> _d = CheckError(ZXing_ImageView_new(data, width, height, format, rowStride, pixStride));
 
-	~ImageView() => ZXing_ImageView_delete(_d);
+	~ImageView() => Dispose(false);
+
+	public void Dispose()
+	{
+		Dispose(true);
+		GC.SuppressFinalize(this);
+	}
+
+	private void Dispose(bool disposing)
+	{
+		lock (this) {
+			_d?.Dispose();
+			if (_pin.IsAllocated)
+				_pin.Free();
+		}
+	}
 }
 
 /// <summary>
@@ -366,19 +462,13 @@ public class ImageView
 /// </summary>
 public class Image : IDisposable
 {
-	internal IntPtr _d;
+	internal readonly ImageHandle _d;
 
-	internal Image(IntPtr d) => _d = d;
+	internal Image(ImageHandle d) => _d = d;
 
-	~Image() => Dispose();
+	public void Dispose() => _d.Dispose();
 
-	public void Dispose()
-	{
-		ZXing_Image_delete(_d);
-		_d = IntPtr.Zero;
-		GC.SuppressFinalize(this);
-	}
-
+	/// <summary>Borrowed pixel pointer, valid only while this image remains alive and undisposed.</summary>
 	public IntPtr Data => ZXing_Image_data(_d);
 	public int Width => ZXing_Image_width(_d);
 	public int Height => ZXing_Image_height(_d);
@@ -386,14 +476,21 @@ public class Image : IDisposable
 
 	public byte[] ToArray()
 	{
-		IntPtr ptr = ZXing_Image_data(_d);
-		if (ptr == IntPtr.Zero)
-			return new byte[0];
+		bool addedRef = false;
+		try {
+			_d.DangerousAddRef(ref addedRef);
+			IntPtr ptr = ZXing_Image_data(_d);
+			if (ptr == IntPtr.Zero)
+				return Array.Empty<byte>();
 
-		int len = Width * Height;
-		byte[] res = new byte[len];
-		Marshal.Copy(ptr, res, 0, len);
-		return res;
+			int len = Width * Height;
+			byte[] res = new byte[len];
+			Marshal.Copy(ptr, res, 0, len);
+			return res;
+		} finally {
+			if (addedRef)
+				_d.DangerousRelease();
+		}
 	}
 }
 
@@ -448,18 +545,11 @@ public class BarcodeFormats : IReadOnlyCollection<BarcodeFormat>
 /// <summary>Configuration options for barcode reading/detection.</summary>
 public class ReaderOptions : IDisposable
 {
-	internal IntPtr _d;
+	internal readonly ReaderOptionsHandle _d;
 
 	public ReaderOptions() => _d = CheckError(ZXing_ReaderOptions_new(), "Failed to create ReaderOptions.");
 
-	~ReaderOptions() => Dispose();
-
-	public void Dispose()
-	{
-		ZXing_ReaderOptions_delete(_d);
-		_d = IntPtr.Zero;
-		GC.SuppressFinalize(this);
-	}
+	public void Dispose() => _d.Dispose();
 
 	/// <summary>Spend more time to find barcodes; slower but more accurate.</summary>
 	public bool TryHarder
@@ -559,7 +649,7 @@ public class ReaderOptions : IDisposable
 /// <summary>Options for creating/encoding barcodes.</summary>
 public class CreatorOptions : IDisposable
 {
-	internal IntPtr _d;
+	internal readonly CreatorOptionsHandle _d;
 
 	public CreatorOptions(BarcodeFormat format, string? options = null)
 	{
@@ -570,14 +660,7 @@ public class CreatorOptions : IDisposable
 
 	public static implicit operator CreatorOptions(BarcodeFormat f) => new CreatorOptions(f);
 
-	~CreatorOptions() => Dispose();
-
-	public void Dispose()
-	{
-		ZXing_CreatorOptions_delete(_d);
-		_d = IntPtr.Zero;
-		GC.SuppressFinalize(this);
-	}
+	public void Dispose() => _d.Dispose();
 
 	public BarcodeFormat Format
 	{
@@ -598,18 +681,11 @@ public class CreatorOptions : IDisposable
 /// <summary>Options for rendering barcodes to images or SVG.</summary>
 public class WriterOptions : IDisposable
 {
-	internal IntPtr _d;
+	internal readonly WriterOptionsHandle _d;
 
 	public WriterOptions() => _d = CheckError(ZXing_WriterOptions_new(), "Failed to create WriterOptions.");
 
-	~WriterOptions() => Dispose();
-
-	public void Dispose()
-	{
-		ZXing_WriterOptions_delete(_d);
-		_d = IntPtr.Zero;
-		GC.SuppressFinalize(this);
-	}
+	public void Dispose() => _d.Dispose();
 
 	/// <summary>Scaling factor for the barcode modules (>0 means 'pixels per module', <0 means 'target size in pixels').</summary>
 	public int Scale
@@ -643,18 +719,11 @@ public class WriterOptions : IDisposable
 /// <summary>A detected or created barcode with its data, format, and metadata.</summary>
 public class Barcode : IDisposable
 {
-	internal IntPtr _d;
+	internal readonly BarcodeHandle _d;
 
-	internal Barcode(IntPtr d) => _d = d;
+	internal Barcode(BarcodeHandle d) => _d = d;
 
-	~Barcode() => Dispose();
-
-	public void Dispose()
-	{
-		ZXing_Barcode_delete(_d);
-		_d = IntPtr.Zero;
-		GC.SuppressFinalize(this);
-	}
+	public void Dispose() => _d.Dispose();
 
 	public Barcode(string data, CreatorOptions opts)
 		=> _d = CheckError(ZXing_CreateBarcodeFromText(data, data.Length, opts._d));
@@ -697,38 +766,93 @@ public class Barcode : IDisposable
 	public string Extra(string? key = null) => MarshalAsString(ZXing_Barcode_extra(_d, key));
 
 	public string ToSVG(WriterOptions? opts = null)
-		=> MarshalAsString(CheckError(ZXing_WriteBarcodeToSVG(_d, opts?._d ?? IntPtr.Zero)));
+		=> MarshalAsString(CheckError(ZXing_WriteBarcodeToSVG(_d, (NativeHandle?)opts?._d ?? NativeHandle.Null)));
 
 	public Image ToImage(WriterOptions? opts = null)
-		=> new Image(CheckError(ZXing_WriteBarcodeToImage(_d, opts?._d ?? IntPtr.Zero)));
+		=> new Image(CheckError(ZXing_WriteBarcodeToImage(_d, (NativeHandle?)opts?._d ?? NativeHandle.Null)));
 }
 
 /// <summary>Barcode reader. Inherits ReaderOptions for convenient configuration.</summary>
 public class BarcodeReader : ReaderOptions
 {
+	private static Barcode[] ReadNative(ImageViewHandle view, ReaderOptions? opts)
+	{
+		using var ptr = CheckError(ZXing_ReadBarcodes(view, (NativeHandle?)opts?._d ?? NativeHandle.Null));
+
+		var size = ZXing_Barcodes_size(ptr);
+		if (size == 0)
+			return Array.Empty<Barcode>();
+		var res = new Barcode[size];
+		try {
+			for (int i = 0; i < size; ++i)
+				res[i] = new Barcode(CheckError(ZXing_Barcodes_move(ptr, i)));
+			return res;
+		} catch {
+			foreach (var barcode in res)
+				barcode?.Dispose();
+			throw;
+		}
+	}
+
+	private static Barcode[] ReadPinned(IntPtr data, int size, int width, int height, ImageFormat format, int rowStride, int pixStride, ReaderOptions? opts)
+	{
+		using var view = CheckError(ZXing_ImageView_new_checked(data, size, width, height, format, rowStride, pixStride));
+		return ReadNative(view, opts);
+	}
+
 	/// <summary>Scans an image for barcodes.</summary>
 	/// <param name="iv">Image to scan.</param>
 	/// <param name="opts">Optional configuration; uses defaults if null.</param>
 	/// <returns>Array of detected barcodes (empty if none found).</returns>
+	[Obsolete("Use a Read overload that takes image data directly.")]
 	public static Barcode[] Read(ImageView iv, ReaderOptions? opts = null)
 	{
-		var ptr = CheckError(ZXing_ReadBarcodes(iv._d, opts?._d ?? IntPtr.Zero));
-
-		// return static empty array if no Barcodes are found, avoiding any managed heap allocation
-		var res = Array.Empty<Barcode>();
-		var size = ZXing_Barcodes_size(ptr);
-		if (size > 0) {
-			res = new Barcode[size];
-			for (int i = 0; i < size; ++i)
-				res[i] = new Barcode(ZXing_Barcodes_move(ptr, i));
-		}
-
-		ZXing_Barcodes_delete(ptr);
-
-		return res;
+		if (iv == null)
+			throw new ArgumentNullException(nameof(iv));
+		lock (iv)
+			return ReadNative(iv._d, opts);
 	}
 
+	/// <summary>Scans a byte array synchronously without copying it. Do not modify the pixels during the scan.</summary>
+	public static Barcode[] Read(byte[] data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0, ReaderOptions? opts = null)
+	{
+		if (data == null)
+			throw new ArgumentNullException(nameof(data));
+		var pin = GCHandle.Alloc(data, GCHandleType.Pinned);
+		try {
+			return ReadPinned(pin.AddrOfPinnedObject(), data.Length, width, height, format, rowStride, pixStride, opts);
+		} finally {
+			pin.Free();
+		}
+	}
+
+	/// <summary>Scans caller-owned memory synchronously without copying it.</summary>
+	/// <param name="data">Pointer to the first image byte.</param>
+	/// <param name="size">Available bytes from <paramref name="data"/>.</param>
+	/// <remarks>The caller must keep the buffer valid and unchanged until this call returns.</remarks>
+	public static Barcode[] Read(IntPtr data, int size, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0, ReaderOptions? opts = null)
+		=> ReadPinned(data, size, width, height, format, rowStride, pixStride, opts);
+
+#if NET
+	/// <summary>Scans a span synchronously without copying it. Do not modify the pixels during the scan.</summary>
+	public static unsafe Barcode[] Read(ReadOnlySpan<byte> data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0, ReaderOptions? opts = null)
+	{
+		fixed (byte* pixels = data) {
+			return ReadPinned((IntPtr)pixels, data.Length, width, height, format, rowStride, pixStride, opts);
+		}
+	}
+#endif
+
+	[Obsolete("Use a Read overload that takes image data directly.")]
 	public Barcode[] From(ImageView iv) => Read(iv, this);
+	public Barcode[] Read(byte[] data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
+		=> Read(data, width, height, format, rowStride, pixStride, this);
+	public Barcode[] Read(IntPtr data, int size, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
+		=> Read(data, size, width, height, format, rowStride, pixStride, this);
+#if NET
+	public Barcode[] Read(ReadOnlySpan<byte> data, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
+		=> Read(data, width, height, format, rowStride, pixStride, this);
+#endif
 }
 
 /// <summary>Barcode creator. Inherits CreatorOptions for convenient configuration.</summary>
