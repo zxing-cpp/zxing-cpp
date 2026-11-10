@@ -96,6 +96,27 @@ TEST(ContentTest, GuessEncoding)
 		EXPECT_EQ(c.guessEncoding(), CharacterSet::Shift_JIS);
 		EXPECT_EQ(c.utf8(), u8"A\u30C6Z");
 	}
+
+	{
+		auto expectEncoding = [](std::string_view bytes, CharacterSet expected) {
+			Content c;
+			c.append(bytes);
+			EXPECT_EQ(c.guessEncoding(), expected);
+		};
+
+		// Short Latin-1 symbol strings should not be mistaken for half-width katakana.
+		expectEncoding("\xAB" "Bonjour" "\xBB", CharacterSet::ISO8859_1);
+		expectEncoding("3 m" "\xB2", CharacterSet::ISO8859_1);
+		expectEncoding("\xB1\xB2", CharacterSet::ISO8859_1);
+
+		// Shift_JIS evidence should still win for a longer kana run and valid double-byte text.
+		expectEncoding("\xC3\xBD\xC4", CharacterSet::Shift_JIS);
+		expectEncoding("\x93\x8C\x8B\x9E\x81\x40\x89\x77", CharacterSet::Shift_JIS);
+		expectEncoding("\x81\xFC", CharacterSet::Shift_JIS);
+		expectEncoding("\x81\x7F", CharacterSet::ISO8859_1);
+		expectEncoding("\x81", CharacterSet::ISO8859_1);
+		expectEncoding("\xF0\x40\xF1\x40\xF2\x40", CharacterSet::ISO8859_1);
+	}
 }
 #endif // defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 

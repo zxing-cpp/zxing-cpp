@@ -245,173 +245,80 @@ ByteArray Content::bytesECI() const
 #if defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 /**
 * @param bytes bytes encoding a string, whose encoding should be guessed
+* @param fallback encoding to use if none of the supported encodings can be determined
 * @return name of guessed encoding; at the moment will only guess one of:
-*  {@link #SHIFT_JIS}, {@link #UTF8}, {@link #ISO88591}, or the platform
-*  default encoding if none of these can possibly be correct
+*  {@link #SHIFT_JIS}, {@link #UTF8}, {@link #ISO88591}, or the specified
+*  fallback if none of these can possibly be correct
 */
 CharacterSet GuessTextEncoding(ByteView bytes, CharacterSet fallback = CharacterSet::ISO8859_1)
 {
-	// For now, merely tries to distinguish ISO-8859-1, UTF-8 and Shift_JIS,
-	// which should be by far the most common encodings.
+	// ISO-8859-1 is the default for ambiguous byte-mode text (including QR data without ECI).
 	bool canBeISO88591 = true;
 	bool canBeShiftJIS = true;
 	bool canBeUTF8 = IsValidUtf8(bytes);
-	int utf8BytesLeft = 0;
-	//int utf8LowChars = 0;
-	int utf2BytesChars = 0;
-	int utf3BytesChars = 0;
-	int utf4BytesChars = 0;
-	int sjisBytesLeft = 0;
-	//int sjisLowChars = 0;
-	int sjisKatakanaChars = 0;
-	//int sjisDoubleBytesChars = 0;
-	int sjisCurKatakanaWordLength = 0;
-	int sjisCurDoubleBytesWordLength = 0;
+	bool hasHighByte = false;
+	bool hasShiftJISC1Lead = false;
+	int sjisKatakanaRun = 0;
+	int sjisDoubleByteRun = 0;
 	int sjisMaxKatakanaWordLength = 0;
 	int sjisMaxDoubleBytesWordLength = 0;
-	//int isoLowChars = 0;
-	//int isoHighChars = 0;
-	int isoHighOther = 0;
 
-	bool utf8bom = bytes.size() > 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF;
+	for (int i = 0; i < Size(bytes); ++i) {
+		const int value = bytes[i];
+		hasHighByte |= value > 0x7F;
+		// C1 (0x80-0x9F) bytes are unlikely Latin-1 text and more likely a Shift_JIS lead.
+		canBeISO88591 &= value < 0x80 || value > 0x9F;
 
-	for (int value : bytes)
-	{
-		if(!(canBeISO88591 || canBeShiftJIS || canBeUTF8))
-			break;
+		if (!canBeShiftJIS)
+			continue;
 
-		// UTF-8 stuff
-		if (canBeUTF8) {
-			if (utf8BytesLeft > 0) {
-				if ((value & 0x80) == 0) {
-					canBeUTF8 = false;
-				}
-				else {
-					utf8BytesLeft--;
-				}
+		// Evidence for Shift_JIS: a byte in 0x81-0x9F (the lead bytes of most double-byte characters),
+		// or a run of 3 half-width katakana or of 3 double-byte characters.
+		// Shift_JIS singles are 0x00-0x7F or 0xA1-0xDF; leads 0x81-0x9F / 0xE0-0xEF
+		// require trails 0x40-0x7E / 0x80-0xFC. Exclude 0xF0-0xFC leads, reserved for JIS X 0208
+		// user-defined characters, but continue to allow them as trails. Other C0 controls are binary evidence.
+		if (value <= 0x7F) {
+			if (value < 0x20 && value != 0x0A && value != 0x0D)
+				canBeShiftJIS = false;
+			sjisKatakanaRun = sjisDoubleByteRun = 0;
+		} else if (value >= 0xA1 && value <= 0xDF) {
+			sjisDoubleByteRun = 0;
+			if (++sjisKatakanaRun > sjisMaxKatakanaWordLength)
+				sjisMaxKatakanaWordLength = sjisKatakanaRun;
+		} else if ((value >= 0x81 && value <= 0x9F) || (value >= 0xE0 && value <= 0xEF)) {
+			if (++i == Size(bytes) || !((bytes[i] >= 0x40 && bytes[i] <= 0x7E) || (bytes[i] >= 0x80 && bytes[i] <= 0xFC))) {
+				canBeShiftJIS = false;
+				continue;
 			}
-			else if ((value & 0x80) != 0) {
-				if ((value & 0x40) == 0) {
-					canBeUTF8 = false;
-				}
-				else {
-					utf8BytesLeft++;
-					if ((value & 0x20) == 0) {
-						utf2BytesChars++;
-					}
-					else {
-						utf8BytesLeft++;
-						if ((value & 0x10) == 0) {
-							utf3BytesChars++;
-						}
-						else {
-							utf8BytesLeft++;
-							if ((value & 0x08) == 0) {
-								utf4BytesChars++;
-							}
-							else {
-								canBeUTF8 = false;
-							}
-						}
-					}
-				}
-			} //else {
-			  //utf8LowChars++;
-			  //}
-		}
-
-		// ISO-8859-1 stuff
-		if (canBeISO88591) {
-			if (value > 0x7F && value < 0xA0) {
-				canBeISO88591 = false;
-			}
-			else if (value > 0x9F) {
-				if (value < 0xC0 || value == 0xD7 || value == 0xF7) {
-					isoHighOther++;
-				} //else {
-				  //isoHighChars++;
-				  //}
-			} //else {
-			  //isoLowChars++;
-			  //}
-		}
-
-		// Shift_JIS stuff
-		if (canBeShiftJIS) {
-			if (sjisBytesLeft > 0) {
-				if (value < 0x40 || value == 0x7F || value > 0xFC) {
-					canBeShiftJIS = false;
-				}
-				else {
-					sjisBytesLeft--;
-				}
-			}
-			else if (value == 0x80 || value == 0xA0 || value > 0xEF || (value < 0x20 && value != 0xa && value != 0xd)) {
-				canBeShiftJIS = false; // use non-printable ASCII as indication for binary content
-			}
-			else if (value > 0xA0 && value < 0xE0) {
-				sjisKatakanaChars++;
-				sjisCurDoubleBytesWordLength = 0;
-				sjisCurKatakanaWordLength++;
-				if (sjisCurKatakanaWordLength > sjisMaxKatakanaWordLength) {
-					sjisMaxKatakanaWordLength = sjisCurKatakanaWordLength;
-				}
-			}
-			else if (value > 0x7F) {
-				sjisBytesLeft++;
-				//sjisDoubleBytesChars++;
-				sjisCurKatakanaWordLength = 0;
-				sjisCurDoubleBytesWordLength++;
-				if (sjisCurDoubleBytesWordLength > sjisMaxDoubleBytesWordLength) {
-					sjisMaxDoubleBytesWordLength = sjisCurDoubleBytesWordLength;
-				}
-			}
-			else {
-				//sjisLowChars++;
-				sjisCurKatakanaWordLength = 0;
-				sjisCurDoubleBytesWordLength = 0;
-			}
+			hasShiftJISC1Lead |= value <= 0x9F;
+			sjisKatakanaRun = 0;
+			if (++sjisDoubleByteRun > sjisMaxDoubleBytesWordLength)
+				sjisMaxDoubleBytesWordLength = sjisDoubleByteRun;
+		} else {
+			canBeShiftJIS = false;
 		}
 	}
 
-	if (canBeUTF8 && utf8BytesLeft > 0) {
-		canBeUTF8 = false;
-	}
-	if (canBeShiftJIS && sjisBytesLeft > 0) {
-		canBeShiftJIS = false;
-	}
-
-	// Easy -- if there is BOM or at least 1 valid not-single byte character (and no evidence it can't be UTF-8), done
-	if (canBeUTF8 && (utf8bom || utf2BytesChars + utf3BytesChars + utf4BytesChars > 0)) {
+	// Valid non-ASCII UTF-8 is decisive; ASCII alone is valid in every encoding.
+	if (canBeUTF8 && hasHighByte)
 		return CharacterSet::UTF8;
-	}
 
 	bool assumeShiftJIS = fallback == CharacterSet::Shift_JIS || fallback == CharacterSet::EUC_JP;
-	// Easy -- if assuming Shift_JIS or at least 3 valid consecutive not-ascii characters (and no evidence it can't be), done
-	if (canBeShiftJIS && (assumeShiftJIS || sjisMaxKatakanaWordLength >= 3 || sjisMaxDoubleBytesWordLength >= 3)) {
+	// Unless the fallback favors Japanese, require a C1 lead or a run of three kana or double-byte characters.
+	if (canBeShiftJIS && (assumeShiftJIS || hasShiftJISC1Lead || sjisMaxKatakanaWordLength >= 3 || sjisMaxDoubleBytesWordLength >= 3))
 		return CharacterSet::Shift_JIS;
-	}
-	// Distinguishing Shift_JIS and ISO-8859-1 can be a little tough for short words. The crude heuristic is:
-	// - If we saw
-	//   - only two consecutive katakana chars in the whole text, or
-	//   - at least 10% of bytes that could be "upper" not-alphanumeric Latin1,
-	// - then we conclude Shift_JIS, else ISO-8859-1
-	if (canBeISO88591 && canBeShiftJIS) {
-		return (sjisMaxKatakanaWordLength == 2 && sjisKatakanaChars == 2) || isoHighOther * 10 >= Size(bytes)
-			? CharacterSet::Shift_JIS : CharacterSet::ISO8859_1;
-	}
 
-	// Otherwise, try in order ISO-8859-1, Shift JIS, UTF-8 and fall back to default platform encoding
-	if (canBeISO88591) {
+	// Prefer the QR Code default when both ISO-8859-1 and Shift_JIS are plausible.
+	if (canBeISO88591)
 		return CharacterSet::ISO8859_1;
-	}
-	if (canBeShiftJIS) {
+
+	if (canBeShiftJIS)
 		return CharacterSet::Shift_JIS;
-	}
-	if (canBeUTF8) {
+
+	if (canBeUTF8)
 		return CharacterSet::UTF8;
-	}
-	// Otherwise, we take a wild guess with platform encoding
+
+	// If none of the supported encodings fit, use the caller-provided fallback.
 	return fallback;
 }
 #endif
