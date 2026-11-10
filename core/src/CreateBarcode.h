@@ -78,6 +78,9 @@ public:
 	/// DataMatrix: only consider square symbol versions
 	ZX_RO_PROPERTY(bool, forceSquare);
 
+	/// Enable extra escape sequences (see libzint EXTRA_ESCAPE_MODE documentation for details)
+	ZX_RO_PROPERTY(bool, extraEscapeMode);
+
 	/// Specify number of columns (e.g. for DataBarExpStk, PDF417)
 	ZX_RO_PROPERTY(int, columns);
 

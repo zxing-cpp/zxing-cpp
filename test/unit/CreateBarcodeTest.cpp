@@ -359,6 +359,12 @@ TEST(CreateBarcodeTest, CreatorOptions)
 #if ZXING_ENABLE_1D
 	bc = CreateBarcodeFromText("(21)123456789", {DataBarExpStk, "columns=1"});
 	EXPECT_GT(bc.symbol().height(), bc.symbol().width());
+
+	bc = CreateBarcodeFromText("123456", {Code128});
+	auto bcEEM = CreateBarcodeFromText("\\^A123456", {Code128, "extraEscapeMode"});
+	EXPECT_EQ(bc.text(), "123456");
+	EXPECT_EQ(bcEEM.text(), "123456");
+	EXPECT_LT(bc.symbol().width(), bcEEM.symbol().width());
 #endif // ZXING_ENABLE_1D
 
 #if ZXING_ENABLE_DATAMATRIX
