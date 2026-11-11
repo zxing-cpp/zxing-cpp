@@ -4,13 +4,6 @@ ZXingCpp is a high-performance .NET barcode reader and writer powered by [zxing-
 with a modern API. It supports all major linear and matrix barcode formats like QRCode, DataMatrix, PDF417, EAN/UPC, Code128,
 etc. It is 5x-50x faster than ZXing.NET, supports more barcode formats (symbologies) and has a higher detection rate on difficult images.
 
-## Install
-
-```sh
-dotnet add package ZXingCpp
-dotnet add package SkiaSharp
-```
-
 ## Read barcodes
 
 SkiaSharp is used here because it works consistently across Windows, Linux, and macOS.
