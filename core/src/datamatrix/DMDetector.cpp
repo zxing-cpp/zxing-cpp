@@ -1018,7 +1018,13 @@ static DetectorResults Scan(EdgeTracer& startTracer, std::array<DMRegressionLine
 		CHECK(version);
 
 		auto movedTowardsBy = [](PointF a, PointF b1, PointF b2, auto d) {
+#if 0
+			auto x = normalized(b1 - a);
+			auto y = normalized(b2 - a);
+			return a + d * x + d * y;
+#else
 			return a + d * normalized(normalized(b1 - a) + normalized(b2 - a));
+#endif
 		};
 
 		// shrink shape by half a pixel to go from center of white pixel outside of code to the edge between white and black
