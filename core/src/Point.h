@@ -114,7 +114,15 @@ T sumAbsComponent(PointT<T> p)
 template <typename T>
 auto length(PointT<T> p) -> decltype(std::sqrt(dot(p, p)))
 {
+#if 0
+	// approximation of sqrt(x^2+y^2) with maximum error of <0.4%
+	auto m = std::abs(p.x), M = std::abs(p.y);
+	if (m > M)
+		std::swap(m, M);
+	return 0.9604 * M + 0.3978 * m;
+#else
 	return std::sqrt(dot(p, p));
+#endif
 }
 
 /// L-inf norm
