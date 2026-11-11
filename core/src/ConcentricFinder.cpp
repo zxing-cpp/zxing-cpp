@@ -265,13 +265,15 @@ std::optional<QuadrilateralF> FitSquareToPoints(const BitMatrix& image, PointF c
 	return res;
 }
 
+// Find the corners of a concentric pattern by fitting squares to the ringIndex'th ring around the center.
+// A negative ringIndex finds the switch between 2 rings instead of the center of a ring.
 std::optional<QuadrilateralF> FindConcentricPatternCorners(const BitMatrix& image, PointF center, int width, int ringIndex)
 {
-	auto innerCorners = FitSquareToPoints(image, center, width, ringIndex, false);
+	auto innerCorners = FitSquareToPoints(image, center, width, std::abs(ringIndex), ringIndex < 0);
 	if (!innerCorners)
 		return {};
 
-	auto outerCorners = FitSquareToPoints(image, center, width, ringIndex + 1, true);
+	auto outerCorners = FitSquareToPoints(image, center, width, std::abs(ringIndex) + (ringIndex > 0), ringIndex > 0);
 	if (!outerCorners)
 		return {};
 
