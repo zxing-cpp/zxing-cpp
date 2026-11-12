@@ -21,6 +21,7 @@
 #include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_FAILURE_USERMSG // more user friendly error messages
 #include <stb_image.h>
 
 #include <webp/decode.h>
