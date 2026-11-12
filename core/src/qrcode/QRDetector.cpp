@@ -506,6 +506,8 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 
 	log(br, LOG_B);
 	auto mod2Pix = Mod2Pix(dimension, brOffset, {fp.tl, fp.tr, br, fp.bl});
+	if (!mod2Pix.isValid())
+		co_return;
 
 #if 1
 	// If the bottom-right alignment pattern was not found, try to find the corner of the symbol
