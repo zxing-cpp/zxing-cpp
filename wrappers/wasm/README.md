@@ -30,17 +30,14 @@ There is an alternative (external) wrapper project called [zxing-wasm](https://g
 
 ## Performance
 
-The measurements below are historical results from the demo camera reader, performed on Chromium 109 running on a Core i9-9980HK with the listed Emscripten versions. Size and runtime can vary with the toolchain and target device. `ZXING_WASM_LTO` is enabled by default and can be disabled when comparing builds.
+The measurements below were collected locally on an Apple M4 Pro using Chromium 150 and Emscripten 7.0.0-git. Each C++20 build included the reader only, with writers and file-image decoding disabled. Download size is the combined `zxing_reader.js` and `zxing_reader.wasm` size. Runtime is the median of 300 scans, after 30 warmups, of `test/samples/none-2/17.webp` (480x480); Chromium decoded the WebP once, then each scan used `readBarcodesFromPixmap`, including canvas pixel extraction and copying pixels to WASM memory. No barcodes were detected. Results vary by toolchain and device.
 
-|         | `-Os` | `-Os -flto` | `-O3`  | `-O3 -flto` | _Build system_ |
-|---------|-------|-------------|--------|-------------|-|
-| size    | 790kB | 950kb       | 940kb  | 1000kB      | _All_               |
-| runtime | 320ms | 30ms        | 8ms    | 8ms         | C++17, emsdk 3.1.9  |
-| runtime | 13ms  | 30ms        | 8ms    | 8ms         | C++17, emsdk 3.1.31 |
-| runtime | 46ms  | 46ms        | 11ms   | 11ms        | C++20, emsdk 3.1.31 |
+|                         | `-Os`  | `-Os -flto` | `-O3`  | `-O3 -flto` |
+|-------------------------|--------|-------------|--------|-------------|
+| Download size (JS+WASM) | 769 kB | 718 kB      | 890 kB | 869 kB      |
+| Median runtime          | 28.5 ms| 23.7 ms     | 11.7 ms| 10.3 ms     |
 
 Conclusions:
- * saving 15% of download size for the price of a 2x-4x slowdown seems like a hard sale (let alone the 40x one)...
- * building in C++-20 mode brings position independent DataMatrix detection but costs 35% more time
- * link time optimization (`-flto`) results depend on the Emscripten version; use `ZXING_WASM_LTO` to enable or disable it
+ * `-O3` was about 2.4x faster than `-Os` for this image, with about 16% more download size
+ * LTO reduced download size and median runtime in both optimization modes in this local test; use `ZXING_WASM_LTO` to compare on your target toolchain and device
  
