@@ -27,6 +27,7 @@ enum class CodecMode
 	KANJI                = 0x08,
 	FNC1_SECOND_POSITION = 0x09,
 	HANZI                = 0x0D, // See GBT 18284-2000; "Hanzi" is a transliteration of this mode name.
+	INVALID              = 0xFF
 };
 
 /**

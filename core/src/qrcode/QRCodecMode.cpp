@@ -33,7 +33,7 @@ CodecMode CodecModeForBits(int bits, Type type)
 			return static_cast<CodecMode>(bits);
 	}
 
-	throw FormatError("Invalid codec mode");
+	return CodecMode::INVALID;
 }
 
 int CharacterCountBits(CodecMode mode, const Version& version)

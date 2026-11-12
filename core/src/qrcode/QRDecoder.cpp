@@ -168,7 +168,7 @@ static ECI ParseECIValue(BitSource& bits)
 		int secondThirdBytes = bits.readBits(16);
 		return ECI(((firstByte & 0x1F) << 16) | secondThirdBytes);
 	}
-	throw FormatError("ParseECIValue: invalid value");
+	return ECI::Unknown; // meaning "invalid" in this context
 }
 
 /**
@@ -216,7 +216,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 
 	try
 	{
-		while(!IsEndOfStream(bits, version)) {
+		while(!error && !IsEndOfStream(bits, version)) {
 			CodecMode mode;
 			if (modeBitLength == 0)
 				mode = CodecMode::NUMERIC; // MicroQRCode version 1 is always NUMERIC and modeBitLength is 0
@@ -231,8 +231,10 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				result.symbology.aiFlag = AIFlag::GS1; // In Alphanumeric mode undouble doubled '%' and treat single '%' as <GS>
 				break;
 			case CodecMode::FNC1_SECOND_POSITION:
-				if (!result.empty())
-					throw FormatError("AIM Application Indicator (FNC1 in second position) at illegal position");
+				if (!result.empty()){
+					error = FormatError("AIM Application Indicator (FNC1 in second position) at illegal position");
+					break;
+				}
 				result.symbology.modifier = '5'; // As above
 				// ISO/IEC 18004:2015 7.4.8.3 AIM Application Indicator (FNC1 in second position), "00-99" or "A-Za-z"
 				if (int appInd = bits.readBits(8); appInd < 100) // "00-09"
@@ -240,7 +242,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				else if ((appInd >= 165 && appInd <= 190) || (appInd >= 197 && appInd <= 222)) // "A-Za-z"
 					result.push_back(appInd - 100);
 				else
-					throw FormatError("Invalid AIM Application Indicator");
+					error = FormatError("Invalid AIM Application Indicator");
 				result.symbology.aiFlag = AIFlag::AIM; // see also above
 				break;
 			case CodecMode::STRUCTURED_APPEND:
@@ -251,20 +253,30 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				structuredAppend.id    = std::to_string(bits.readBits(8));
 				break;
 			case CodecMode::ECI:
-				if (version.isModel1())
-					throw FormatError("QRCode Model 1 does not support ECI");
+				if (version.isModel1()) {
+					error = FormatError("QRCode Model 1 does not support ECI");
+					break;
+				}
 				// Count doesn't apply to ECI
-				result.switchEncoding(ParseECIValue(bits));
+				if (auto eci = ParseECIValue(bits); eci != ECI::Unknown)
+					result.switchEncoding(eci);
+				else
+					error = FormatError("Invalid ECI value");
 				break;
 			case CodecMode::HANZI: {
 				// First handle Hanzi mode which does not start with character count
 				// chinese mode contains a sub set indicator right after mode indicator
-				if (int subset = bits.readBits(4); subset != 1) // GB2312_SUBSET is the only supported one right now
-					throw FormatError("Unsupported HANZI subset");
+				if (int subset = bits.readBits(4); subset != 1) { // GB2312_SUBSET is the only supported one right now
+					error = FormatError("Unsupported HANZI subset");
+					break;
+				}
 				int count = bits.readBits(CharacterCountBits(mode, version));
 				DecodeHanziSegment(bits, count, result);
 				break;
 			}
+			case CodecMode::INVALID:
+				error = FormatError("Invalid CodecMode");
+				break;
 			default: {
 				// "Normal" QR code modes:
 				// How many characters will follow, encoded in this mode?
@@ -274,7 +286,7 @@ DecoderResult DecodeBitStream(ByteArray&& bytes, const Version& version, ErrorCo
 				case CodecMode::ALPHANUMERIC: DecodeAlphanumericSegment(bits, count, result); break;
 				case CodecMode::BYTE:         DecodeByteSegment(bits, count, result); break;
 				case CodecMode::KANJI:        DecodeKanjiSegment(bits, count, result); break;
-				default:                      throw FormatError("Invalid CodecMode");
+				default:                      error = FormatError("Invalid CodecMode"); break;
 				}
 				break;
 			}

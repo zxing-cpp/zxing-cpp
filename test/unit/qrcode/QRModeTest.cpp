@@ -20,7 +20,7 @@ TEST(QRModeTest, ForBits)
 	ASSERT_EQ(CodecMode::ALPHANUMERIC, CodecModeForBits(0x02, Type::Model2));
 	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x04, Type::Model2));
 	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x08, Type::Model2));
-	ASSERT_THROW(CodecModeForBits(0x10, Type::Model2), Error);
+	ASSERT_EQ(CodecMode::INVALID, CodecModeForBits(0x10, Type::Model2));
 }
 
 TEST(QRModeTest, CharacterCount)
@@ -52,7 +52,7 @@ TEST(QRModeTest, MicroForBits)
 	ASSERT_EQ(CodecMode::BYTE, CodecModeForBits(0x02, Type::Micro));
 	ASSERT_EQ(CodecMode::KANJI, CodecModeForBits(0x03, Type::Micro));
 
-	ASSERT_THROW(CodecModeForBits(0x04, Type::Micro), Error);
+	ASSERT_EQ(CodecMode::INVALID, CodecModeForBits(0x04, Type::Micro));
 }
 
 TEST(QRModeTest, MicroCharacterCount)
@@ -76,7 +76,7 @@ TEST(QRModeTest, RMQRForBits)
 	ASSERT_EQ(CodecMode::FNC1_FIRST_POSITION, CodecModeForBits(0x05, Type::rMQR));
 	ASSERT_EQ(CodecMode::FNC1_SECOND_POSITION, CodecModeForBits(0x06, Type::rMQR));
 	ASSERT_EQ(CodecMode::ECI, CodecModeForBits(0x07, Type::rMQR));
-	ASSERT_THROW(CodecModeForBits(0x08, Type::rMQR), Error);
+	ASSERT_EQ(CodecMode::INVALID, CodecModeForBits(0x08, Type::rMQR));
 }
 
 TEST(QRModeTest, RMQRCharacterCount)
