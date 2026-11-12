@@ -17,7 +17,9 @@ macro(zxing_add_package_stb)
         if (NOT STB_FOUND)
             include(FetchContent)
             FetchContent_Declare (stb
-                GIT_REPOSITORY https://github.com/nothings/stb.git)
+                GIT_REPOSITORY https://github.com/nothings/stb.git
+                GIT_TAG 003501f6d7a8668ce8b6d875e34dd97ad0d5d5b5 # work around req_comp regression (see #2055)
+            )
             FetchContent_MakeAvailable (stb)
             add_library(stb::stb INTERFACE IMPORTED)
             target_include_directories(stb::stb INTERFACE ${stb_SOURCE_DIR})
