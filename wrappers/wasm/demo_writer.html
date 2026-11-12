@@ -44,41 +44,46 @@ function showImage(container, fileData) {
 }
 	</script>
 	<style>
-#input_text {
-	width: 240px;
-}
-
-select,
-input {
-	margin: 3px 0px;
-	width: 120px;
-}
-
-tr td:first-child {
-	text-align: right;
-}
-
-div {
-	float: left;
-	margin: 0.5em;
-}
+		* { box-sizing: border-box; }
+		body { margin: 0; background: #f2f5f2; color: #23312a; font: 16px/1.5 system-ui, sans-serif; }
+		main { max-width: 960px; width: calc(100% - 32px); margin: 32px auto; padding: 24px; background: #fff; border: 1px solid #d9e1da; border-radius: 8px; }
+		h1 { margin: 0; font-size: 1.6rem; line-height: 1.25; }
+		.intro { margin: 8px 0 22px; color: #5a675f; }
+		.writer-layout { display: grid; grid-template-columns: minmax(0, 350px) minmax(0, 1fr); gap: 30px; align-items: start; padding-top: 18px; border-top: 1px solid #e0e6e0; }
+		.controls { min-width: 0; }
+		.field-label { display: block; margin-bottom: 6px; font-weight: 600; }
+		#input_text { display: block; width: 100%; min-height: 90px; padding: 8px; border: 1px solid #b8c5bc; border-radius: 4px; font: inherit; resize: vertical; }
+		.options { width: 100%; margin: 12px 0; border-collapse: collapse; }
+		.options th, .options td { padding: 6px 8px 6px 0; text-align: left; vertical-align: middle; }
+		.options th { width: 42%; font-weight: 600; }
+		.options select, .options input { width: 100%; min-width: 0; padding: 5px 8px; border: 1px solid #b8c5bc; border-radius: 4px; background: #fff; font: inherit; }
+		.generate { margin-top: 4px; padding: 8px 14px; border: 0; border-radius: 4px; background: #315f4c; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+		.preview h2 { margin: 0 0 8px; font-size: 1.1rem; }
+		.preview-surface { min-height: 260px; display: flex; align-items: center; justify-content: center; padding: 16px; border: 1px dashed #cbd6ce; border-radius: 4px; background: #f6f8f6; overflow: auto; }
+		#write_result { max-width: 100%; overflow: auto; }
+		#write_result img { display: block; width: auto; height: auto; max-width: 100%; image-rendering: pixelated; }
+		@media (max-width: 600px) {
+			main { margin: 16px auto; padding: 18px; }
+			.writer-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+		}
 	</style>
 </head>
 
 <body>
-	<h2>zxing-cpp/wasm writer demo</h2>
-	<p>
+	<main>
+	<h1>zxing-cpp/wasm writer demo</h1>
+	<p class="intro">
 		This is a simple demo of the wasm wrapper of <a href="https://github.com/zxing-cpp/zxing-cpp">zxing-cpp</a>
 		for generating barcodes.
 	</p>
-	<p></p>
-	<div>
-		Enter your text here:<br />
+	<div class="writer-layout">
+	<section class="controls">
+		<label class="field-label" for="input_text">Text to encode</label>
 		<textarea id="input_text"></textarea>
-		<br />
-		<table>
+		<table class="options">
+			<tbody>
 			<tr>
-				<td>Format:</td>
+				<th scope="row"><label for="input_format">Format</label></th>
 				<td>
 					<select id="input_format">
 						<option value="Aztec">Aztec</option>
@@ -98,7 +103,7 @@ div {
 				</td>
 			</tr>
 			<tr>
-				<td>Encoding:</td>
+				<th scope="row"><label for="input_charset">Encoding</label></th>
 				<td>
 					<select id="input_charset">
 						<option value="Cp437">Cp437</option>
@@ -133,37 +138,45 @@ div {
 						<option value="EUC-KR">EUC-KR</option>
 					</select>
 				</td>
+				<tr>
+					<th scope="row"><label for="input_ecclevel">ECC Level</label></th>
+					<td>
+						<select id="input_ecclevel">
+							<option value="-1">Default</option>
+							<option value="0">0</option>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+							<option value="8">8</option>
+						</select>
+					</td>
+				</tr>
 			</tr>
-			<td>ECC Level:</td>
-			<td>
-				<select id="input_ecclevel">
-					<option value="-1">Default</option>
-					<option value="0">0</option>
-					<option value="1">1</option>
-					<option value="2">2</option>
-					<option value="3">3</option>
-					<option value="4">4</option>
-					<option value="5">5</option>
-					<option value="6">6</option>
-					<option value="7">7</option>
-					<option value="8">8</option>
-				</select>
-			</td>
+					<th scope="row"><label for="input_margin">Quiet Zone</label></th>
+					<td><input id="input_margin" type="number" value="10" /></td>
 			</tr>
-			<td>Quiet Zone:</td>
-			<td><input id="input_margin" type="number" value="10" /></td>
+				<tr>
+					<th scope="row"><label for="input_width">Image Width</label></th>
+					<td><input id="input_width" type="number" value="200" /></td>
 			</tr>
-			<td>Image Width:</td>
-			<td><input id="input_width" type="number" value="200" /></td>
+				<tr>
+					<th scope="row"><label for="input_height">Image Height</label></th>
+					<td><input id="input_height" type="number" value="200" /></td>
 			</tr>
-			<td>Image Height:</td>
-			<td><input id="input_height" type="number" value="200" /></td>
-			</tr>
+				</tbody>
 		</table>
-		<br />
-		<input type="button" value="Generate" onclick="generateBarcode()" />
+			<button class="generate" type="button" onclick="generateBarcode()">Generate</button>
+		</section>
+		<section class="preview">
+			<h2>Barcode preview</h2>
+			<div class="preview-surface"><div id="write_result"></div></div>
+		</section>
 	</div>
-	<div id="write_result"></div>
+		</main>
 </body>
 
 </html>

@@ -2,63 +2,90 @@
 <html>
 
 <head>
+	<meta charset="utf-8">
 	<title>zxing-cpp/wasm live demo</title>
 	<link rel="shortcut icon" href="#" />
+	<style>
+		* { box-sizing: border-box; }
+		body { margin: 0; background: #f2f5f2; color: #23312a; font: 16px/1.5 system-ui, sans-serif; }
+		main { max-width: 960px; width: calc(100% - 32px); margin: 32px auto; padding: 24px; background: #fff; border: 1px solid #d9e1da; border-radius: 8px; }
+		h1 { margin: 0; font-size: 1.6rem; line-height: 1.25; }
+		.intro { margin: 8px 0 22px; color: #5a675f; }
+		.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 14px 0; margin-bottom: 18px; border-block: 1px solid #e0e6e0; }
+		.control { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+		select { max-width: 100%; padding: 5px 8px; border: 1px solid #b8c5bc; border-radius: 4px; background: #fff; font: inherit; }
+		canvas { display: block; max-width: 100%; height: auto; margin: 0 auto; border: 1px solid #d9e1da; border-radius: 4px; background: #e8eee9; }
+		.scan-result { min-height: 1.5em; margin: 14px 0 0; font-weight: 600; }
+		.results { margin: 0; padding-left: 1.5rem; text-align: left; }
+		.results li { padding: 8px 0; border-bottom: 1px solid #e4e9e5; }
+		.results pre { margin: 5px 0; color: #536159; font-size: .875rem; white-space: pre-wrap; overflow-wrap: anywhere; font-weight: 400; }
+		.scan-time { margin: 4px 0 0; color: #315f4c; font-size: .9rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+		@media (max-width: 600px) {
+			main { margin: 16px auto; padding: 18px; }
+			.controls { gap: 8px; }
+		}
+	</style>
 	<script src="zxing_reader.js"></script>
 </head>
 
-<body style="text-align: center">
-	<h2>zxing-cpp/wasm live demo</h2>
-	<p>
+<body>
+	<main>
+	<h1>zxing-cpp/wasm live demo</h1>
+	<p class="intro">
 		This is a simple demo of the wasm wrapper of <a href="https://github.com/zxing-cpp/zxing-cpp">zxing-cpp</a>
 		scanning for barcodes in a live video stream.
 	</p>
 
-	Camera:
+	<div class="controls">
+	<label class="control" for="cameraSelector">Camera
 	<select id="cameraSelector">
 		<option value="user">Front Camera</option>
 		<option value="environment">Back Camera</option>
 	</select>
-	&nbsp;&nbsp;
+	</label>
 
-	Format:
+	<label class="control" for="format">Format
 	<select id="format">
-		<option value="" selected="">Any</option>
+		<option value="All" selected="">All</option>
+		<option value="AllLinear">All Linear</option>
+		<option value="AllMatrix">All Matrix</option>
 		<option value="Aztec">Aztec</option>
-		<option value="Code39">Codabar</option>
-		<option value="CODE_39">Code39</option>
-		<option value="Code93">Code93</option>
-		<option value="Code128">Code128</option>
-		<option value="DataMatrix">DataMatrix</option>
+		<option value="Codabar">Codabar</option>
+		<option value="Code39">Code 39</option>
+		<option value="Code93">Code 93</option>
+		<option value="Code128">Code 128</option>
+		<option value="DataMatrix">Data Matrix</option>
 		<option value="DataBar">DataBar</option>
-		<option value="DataBarExpanded">DataBarExpanded</option>
-		<option value="DataBarLimited">DataBarLimited</option>
-		<option value="DXFilmEdge">DXFilmEdge</option>
+		<option value="DataBarExp">DataBar Expanded</option>
+		<option value="DataBarLtd">DataBar Limited</option>
+		<option value="DXFilmEdge">DX Film Edge</option>
 		<option value="EAN8">EAN-8</option>
 		<option value="EAN13">EAN-13</option>
 		<option value="ITF">ITF</option>
+		<option value="MaxiCode">MaxiCode</option>
 		<option value="PDF417">PDF417</option>
-		<option value="QRCode">QRCode</option>
-		<option value="MicroQRCode">Micro QRCode</option>
+		<option value="QRCode">QR Code</option>
+		<option value="MicroQRCode">Micro QR Code</option>
 		<option value="RMQRCode">rMQR Code</option>
+		<option value="Telepen">Telepen</option>
 		<option value="UPCA">UPC-A</option>
 		<option value="UPCE">UPC-E</option>
-		<option value="LinearCodes">Linear Codes</option>
-		<option value="MatrixCodes">Matrix Codes</option>
 	</select>
-	&nbsp;&nbsp;
+	</label>
 
-	Mode:
+	<label class="control" for="mode">Mode
 	<select id="mode">
 		<option value="true" selected="">Normal</option>
 		<option value="false">Fast</option>
 	</select>
-	<br /><br />
+	</label>
+	</div>
 
 	<canvas id="canvas" width="640" height="480"></canvas>
-	<br /><br />
-
-	<div id="result"></div>
+	<p id="result" class="scan-result">No barcode found</p>
+	<ol id="results" class="results"></ol>
+	<p id="scanTime" class="scan-time">Scan time: --</p>
+	</main>
 
 	<script>
 		var zxing = ZXing().then(function (instance) {
@@ -70,6 +97,9 @@
 		const mode = document.getElementById("mode");
 		const canvas = document.getElementById("canvas");
 		const resultElement = document.getElementById("result");
+		const resultsElement = document.getElementById("results");
+		const scanTimeElement = document.getElementById("scanTime");
+		let lastResultKey = "";
 
 		const ctx = canvas.getContext("2d", { willReadFrequently: true });
 		const video = document.createElement("video");
@@ -78,7 +108,7 @@
 		video.setAttribute("height", canvas.height);
 		video.setAttribute("autoplay", "");
 
-		function readBarcodeFromCanvas(canvas, format, mode) {
+		function readBarcodesFromCanvas(canvas, format, mode) {
 			var imgWidth = canvas.width;
 			var imgHeight = canvas.height;
 			var imageData = canvas.getContext('2d').getImageData(0, 0, imgWidth, imgHeight);
@@ -87,47 +117,73 @@
 			if (zxing != null) {
 				var buffer = zxing._malloc(sourceBuffer.byteLength);
 				zxing.HEAPU8.set(sourceBuffer, buffer);
-				var result = zxing.readBarcodeFromPixmap(buffer, imgWidth, imgHeight, mode, format);
+				var results = zxing.readBarcodesFromPixmap(buffer, imgWidth, imgHeight, mode, format, 0xff);
 				zxing._free(buffer);
-				return result;
-			} else {
-				return { error: "ZXing not yet initialized" };
+				return results;
 			}
+			return null;
 		}
 
-		function drawResult(code) {
-			ctx.beginPath();
-			ctx.lineWidth = 4;
-			ctx.strokeStyle = "red";
-			// ctx.textAlign = "center";
-			// ctx.fillStyle = "#green"
-			// ctx.font = "25px Arial";
-			// ctx.fontWeight = "bold";
-			with (code.position) {
-				ctx.moveTo(topLeft.x, topLeft.y);
-				ctx.lineTo(topRight.x, topRight.y);
-				ctx.lineTo(bottomRight.x, bottomRight.y);
-				ctx.lineTo(bottomLeft.x, bottomLeft.y);
-				ctx.lineTo(topLeft.x, topLeft.y);
+		function drawResults(results) {
+			for (let index = 0; index < results.size(); index++) {
+				const { position } = results.get(index);
+				ctx.beginPath();
+				ctx.lineWidth = 4;
+				ctx.strokeStyle = "red";
+				ctx.moveTo(position.topLeft.x, position.topLeft.y);
+				ctx.lineTo(position.topRight.x, position.topRight.y);
+				ctx.lineTo(position.bottomRight.x, position.bottomRight.y);
+				ctx.lineTo(position.bottomLeft.x, position.bottomLeft.y);
+				ctx.closePath();
 				ctx.stroke();
-				// ctx.fillText(code.text, (topLeft.x + bottomRight.x) / 2, (topLeft.y + bottomRight.y) / 2);
 			}
 		}
 
-		function escapeTags(htmlStr) {
-			return htmlStr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+		function showResults(results) {
+			const records = [];
+			if (results) {
+				for (let index = 0; index < results.size(); index++) {
+					const { format: barcodeFormat, text, error } = results.get(index);
+					records.push({
+						format: barcodeFormat,
+						text: text || `Error: ${error}`
+					});
+				}
+			}
+
+			const noResults = format.value === "All" ? "No barcode found" : `No ${format.selectedOptions[0].textContent} found`;
+			const resultKey = records.length ? JSON.stringify(records) : noResults;
+			if (resultKey === lastResultKey)
+				return;
+			lastResultKey = resultKey;
+			resultsElement.replaceChildren();
+
+			if (!records.length) {
+				resultElement.textContent = resultKey;
+				return;
+			}
+
+			resultElement.textContent = "";
+			for (const record of records) {
+				const item = document.createElement("li");
+				const label = document.createElement("strong");
+				label.textContent = `Format: ${record.format}`;
+				const text = document.createElement("pre");
+				text.textContent = record.text;
+				item.append(label, text);
+				resultsElement.append(item);
+			}
 		}
 
 		const processFrame = function () {
 			ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-			const code = readBarcodeFromCanvas(canvas, format.value, mode.value === 'true');
-			if (code.format) {
-				resultElement.innerText = code.format + ": " + escapeTags(code.text);
-				drawResult(code)
-			} else {
-				resultElement.innerText = "No barcode found";
-			}
+			const scanStartTime = performance.now();
+			const results = readBarcodesFromCanvas(canvas, format.value, mode.value === 'true');
+			scanTimeElement.textContent = `Scan time: ${(performance.now() - scanStartTime).toFixed(2)} ms`;
+			if (results && results.size())
+				drawResults(results);
+			showResults(results);
 			requestAnimationFrame(processFrame);
 		};
 
