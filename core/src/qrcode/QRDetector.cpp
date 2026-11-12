@@ -507,6 +507,18 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 	log(br, LOG_B);
 	auto mod2Pix = Mod2Pix(dimension, brOffset, {fp.tl, fp.tr, br, fp.bl});
 
+#if 1
+	// If the bottom-right alignment pattern was not found, try to find the corner of the symbol
+	if (!brFound) {
+		auto grid = LocalGrid(image, mod2Pix, {dimension, dimension}).at({dimension - 1, dimension - 1}, {-4, -4});
+		if (auto corner = grid.findCorner(6, {1, 1})){
+			br = grid.getPos(PointI{-4, -4});
+			brOffset = PointF(1, 1);
+			mod2Pix = Mod2Pix(dimension, brOffset, {fp.tl, fp.tr, br, fp.bl});
+		}
+	}
+#endif
+
 	if( dimension >= Version::SymbolSize(7, Type::Model2).x) {
 		auto version = ReadVersion(image, dimension, mod2Pix);
 
@@ -606,6 +618,7 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 	// a) if we have a version 1 symbol and tried and failed with the intersection of the trace lines (#1086), or
 	// b) if the symbol is almost level and the resolution of the RegressionLines is not sufficient (#199 and estimate-tilt.jpg)
 	// we then try the fallback method of sampling the symbol with the br corner extrapolated from the other three corners.
+	// TODO: re-evaluate the following logic after adding the corner finding fallback above
 	if (!brFound
 		&& ((dimension == 21 && brOffset != PointF(0, 0))
 			|| (EstimateTilt(fp) < 1.1 && !(bl2.isHighRes() && bl3.isHighRes() && tr2.isHighRes() && tr3.isHighRes()))))
