@@ -10,13 +10,27 @@
 
 You can also download the latest build output from the continuous integration system from the [Actions](https://github.com/zxing-cpp/zxing-cpp/actions) tab. Look for 'wasm-artifacts'. Also check out the [live demos](https://github.com/zxing-cpp/zxing-cpp#web-demos).
 
+## Reducing the Download Size
+
+These CMake options let applications choose which wrapper features and optimizations to include:
+
+| Option | Effect |
+|--------|--------|
+| `-DZXING_WASM_IMAGE_DECODING=OFF` | Omits `readBarcode(s)FromImage` and stb_image decoding. Use `readBarcode(s)FromPixmap` with pixel data decoded by the browser or application instead. |
+| `-DZXING_ENABLE_UNICODE=OFF` | Omits support for multi-byte character sets and less common single-byte code pages. ASCII, UTF-8, ISO-8859-1, and binary data remain supported; text in omitted character sets is returned as bytes without decoded text. |
+| `-DZXING_WASM_EXCEPTIONS=wasm` | Uses native WebAssembly exceptions instead of JavaScript exception emulation. This requires WebAssembly exception handling support in the target runtime; the default `js` mode has broader compatibility. |
+| `-DZXING_ENABLE_<FORMAT>=OFF` | Drops support for a format family: `1D`, `AZTEC`, `DATAMATRIX`, `MAXICODE`, `PDF417`, `QRCODE`. |
+| `-DZXING_WASM_LTO=OFF` | Disables link time optimization, which is enabled by default. |
+| `-DCMAKE_BUILD_TYPE=MinSizeRel` | Optimizes for size (`-Os`) instead of speed (`-O3`). |
+| `-DCMAKE_EXE_LINKER_FLAGS=-sMALLOC=emmalloc` | Uses emscripten's smaller (but simpler) memory allocator. |
+
 ## Alternative Wrapper Project
 
 There is an alternative (external) wrapper project called [zxing-wasm](https://github.com/Sec-ant/zxing-wasm). It is written in TypeScript, has a more feature complete interface closer to the C++ API, spares you from dealing with WASM intricacies and is provided as a fully fledged ES module on [npmjs](https://www.npmjs.com/package/zxing-wasm).
 
 ## Performance
 
-It turns out that compiling the library with the `-Os` (`MinSizeRel`) flag causes a noticeable performance penalty. Here are some measurements from the demo_cam_reader (performed on Chromium 109 running on a Core i9-9980HK):
+The measurements below are historical results from the demo camera reader, performed on Chromium 109 running on a Core i9-9980HK with the listed Emscripten versions. Size and runtime can vary with the toolchain and target device. `ZXING_WASM_LTO` is enabled by default and can be disabled when comparing builds.
 
 |         | `-Os` | `-Os -flto` | `-O3`  | `-O3 -flto` | _Build system_ |
 |---------|-------|-------------|--------|-------------|-|
@@ -28,5 +42,5 @@ It turns out that compiling the library with the `-Os` (`MinSizeRel`) flag cause
 Conclusions:
  * saving 15% of download size for the price of a 2x-4x slowdown seems like a hard sale (let alone the 40x one)...
  * building in C++-20 mode brings position independent DataMatrix detection but costs 35% more time
- * link time optimization (`-flto`) is not worth it and potentially even counter productive
+ * link time optimization (`-flto`) results depend on the Emscripten version; use `ZXING_WASM_LTO` to enable or disable it
  

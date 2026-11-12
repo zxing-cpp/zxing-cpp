@@ -13,8 +13,10 @@
 #include <stdexcept>
 #include <string>
 
+#if ZXING_WASM_IMAGE_DECODING
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#endif
 
 using namespace ZXing;
 
@@ -68,6 +70,7 @@ std::vector<ReadResult> readBarcodes(ImageView iv, bool tryHarder, const std::st
 	return {};
 }
 
+#if ZXING_WASM_IMAGE_DECODING
 std::vector<ReadResult> readBarcodesFromImage(int bufferPtr, int bufferLength, bool tryHarder, std::string format, int maxSymbols)
 {
 	int width, height, channels;
@@ -84,6 +87,7 @@ ReadResult readBarcodeFromImage(int bufferPtr, int bufferLength, bool tryHarder,
 {
 	return FirstOrDefault(readBarcodesFromImage(bufferPtr, bufferLength, tryHarder, format, 1));
 }
+#endif
 
 std::vector<ReadResult> readBarcodesFromPixmap(int bufferPtr, int imgWidth, int imgHeight, bool tryHarder, std::string format, int maxSymbols)
 {
@@ -117,9 +121,10 @@ EMSCRIPTEN_BINDINGS(BarcodeReader)
 
 	register_vector<ReadResult>("vector<ReadResult>");
 
+#if ZXING_WASM_IMAGE_DECODING
 	function("readBarcodeFromImage", &readBarcodeFromImage);
-	function("readBarcodeFromPixmap", &readBarcodeFromPixmap);
-
 	function("readBarcodesFromImage", &readBarcodesFromImage);
+#endif
+	function("readBarcodeFromPixmap", &readBarcodeFromPixmap);
 	function("readBarcodesFromPixmap", &readBarcodesFromPixmap);
 };
