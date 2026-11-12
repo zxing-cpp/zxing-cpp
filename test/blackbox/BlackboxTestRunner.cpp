@@ -33,6 +33,7 @@ namespace ZXing::Test {
 static int failed = 0;
 static int extra = 0;
 static int totalImageLoadTime = 0;
+static double totalUEC = 0;
 
 static std::string Abbrev(std::string_view str, size_t maxLength)
 {
@@ -365,6 +366,10 @@ static void runBlackBoxTestDirectory(const fs::path& directory)
 			for (int rotation : {0, 1, 2, 3}) {
 				numFound.at(rotation) += Size(test.found.at(rotation));
 				auto found = test.found.at(rotation);
+				for (auto& barcode : found) {
+					if (!barcode.extra("UEC").empty())
+						totalUEC += std::stod(barcode.extra("UEC"));
+				}
 
 				if (auto val = test.prop("SequenceIndex", Size(test.props) - 1); val == "-1" && !found.empty())
 					found.push_back(MergeStructuredAppendSequence(found));
@@ -466,6 +471,7 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 	std::println("load time:   {} ms.", totalImageLoadTime);
 	std::println("decode time: {} ms.", decodeTime);
 	std::println("total time:  {} ms.", totalTime);
+	std::println("total UEC:   {:.10}", totalUEC);
 	if (failed)
 		std::println("WARNING: {} tests failed.", failed);
 	if (extra)
