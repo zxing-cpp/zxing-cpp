@@ -468,9 +468,9 @@ int runBlackBoxTests(const fs::path& testPathPrefix, const std::set<std::string>
 
 	int totalTime = timeSince(startTime);
 	int decodeTime = totalTime - totalImageLoadTime;
-	std::println("load time:   {} ms.", totalImageLoadTime);
-	std::println("decode time: {} ms.", decodeTime);
-	std::println("total time:  {} ms.", totalTime);
+	std::println("load time:   {} ms", totalImageLoadTime);
+	std::println("decode time: {} ms", decodeTime);
+	std::println("total time:  {} ms", totalTime);
 	std::println("total UEC:   {:.10}", totalUEC);
 	if (failed)
 		std::println("WARNING: {} tests failed.", failed);
