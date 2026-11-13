@@ -284,6 +284,7 @@ struct Test
 	Test(fs::path imgPath, const Properties& defaults)
 		: imgPath(std::move(imgPath)), props(readTestConfig(this->imgPath, defaults))
 	{
+		opts.tryDownscale(false);
 		if (auto val = prop("formats"))
 			opts.formats(BarcodeFormats(*val));
 		if (auto val = prop("eanAddOnSymbol"))
@@ -294,6 +295,10 @@ struct Test
 			opts.maxNumberOfSymbols(std::stoi(*val));
 		if (auto val = prop("returnErrors"))
 			opts.returnErrors(*val == "true");
+		if (auto val = prop("tryDownscale"))
+			opts.tryDownscale(*val == "true");
+		if (auto val = prop("tryDenoise"))
+			opts.tryDenoise(*val == "true");
 
 		search = parseTestFilter(*prop("find"));
 		if (auto val = prop("search"))
@@ -303,14 +308,10 @@ struct Test
 	void run(TestMode mode)
 	{
 		auto opts = this->opts;
-		opts.tryDownscale(false).downscaleFactor(2).downscaleThreshold(180);
-		opts.tryHarder(mode == TestMode::Slow);
-		opts.tryRotate(mode == TestMode::Slow);
-		opts.tryInvert(mode == TestMode::Slow);
-		// opts.tryDenoise(mode == TestMode::Slow);
-		opts.isPure(mode == TestMode::Pure);
+		if (mode == TestMode::Fast)
+			opts.tryHarder(false).tryRotate(false).tryInvert(false);
 		if (mode == TestMode::Pure)
-			opts.binarizer(Binarizer::FixedThreshold);
+			opts.binarizer(Binarizer::FixedThreshold).isPure(true);
 		// opts.maxNumberOfSymbols(1);
 
 		for (int rotation : {0, 1, 2, 3}) {
