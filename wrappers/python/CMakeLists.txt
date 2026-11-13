@@ -35,7 +35,7 @@ endif()
 find_package(Python 3.10
     REQUIRED COMPONENTS Interpreter Development.Module
     OPTIONAL_COMPONENTS Development.SABIModule)
-zxing_add_package(nanobind nanobind https://github.com/wjakob/nanobind.git v2.11.0)
+zxing_add_package(nanobind nanobind https://github.com/wjakob/nanobind.git v3.1.0)
 
 nanobind_add_module(zxingcpp STABLE_ABI FREE_THREADED zxing.cpp)
 target_link_libraries(zxingcpp PRIVATE ZXing::ZXing)
