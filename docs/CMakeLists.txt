@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(ZXingDocs VERSION 3.1.1)
+project(ZXingDocs VERSION 3.2.0)
 
 find_package(Doxygen)
 

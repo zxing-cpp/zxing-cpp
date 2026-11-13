@@ -68,7 +68,7 @@ dependencies {
 
 val publishSnapshot = project.findProperty("publishSnapshot") as? String
 group = "io.github.zxing-cpp"
-version = if (publishSnapshot == "true") "3.2.0-SNAPSHOT" else "3.1.1"
+version = if (publishSnapshot == "true") "3.2.0-SNAPSHOT" else "3.2.0-rc1"
 
 val javadocJar = tasks.register<Jar>("javadocJar") {
     description = "Assembles a jar archive containing the javadoc."

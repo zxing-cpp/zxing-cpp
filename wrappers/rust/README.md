@@ -6,7 +6,7 @@ It is an open-source, multi-format linear/matrix barcode image processing librar
 It was originally ported from the Java ZXing Library but has been developed further and now includes
 many improvements in terms of runtime and detection performance.
 
-Version 0.5.3 includes [zxing-cpp-v3.1.1](https://github.com/zxing-cpp/zxing-cpp/releases#release-v3.1.1)
+Version 0.5.4-rc1 includes [zxing-cpp-v3.2.0-rc1](https://github.com/zxing-cpp/zxing-cpp/releases#release-v3.2.0-rc1)
 
 ## Usage
 
@@ -17,7 +17,7 @@ In your Cargo.toml:
 # `bundled` causes cargo to compile and statically link an up to
 # date version of the c++ core library. This is the most convenient
 # and safe way to build the library.
-zxing-cpp = { version = "0.5.3", features = ["bundled", "image"] }
+zxing-cpp = { version = "0.5.4-rc1", features = ["bundled", "image"] }
 ```
 
 Simple example reading some barcodes from a jpg file:
