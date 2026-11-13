@@ -193,6 +193,9 @@ jobs:
     needs: test-win-x86
     if: ${{ github.event_name == 'release' || github.event.inputs.publish == 'y' }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # enable GitHub OIDC token issuance for this job
+      contents: read  # allow the job to read repository contents
 
     steps:
       - uses: actions/download-artifact@v8
