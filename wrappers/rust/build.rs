@@ -1,6 +1,6 @@
 use std::env;
 
-fn main() -> miette::Result<()> {
+fn main() {
 	if cfg!(feature = "bundled") {
 		// Builds the project in the directory located in `core`, installing it into $OUT_DIR
 		let mut dst = cmake::Config::new("core")
@@ -35,5 +35,4 @@ fn main() -> miette::Result<()> {
 
 	// replace enum decimal constants with hexadecimal ones for better readability
 	// perl -0777 -i -pe 's/(pub const (?:ZXing_(?:Barcode|Image)Format_\w+: ZXing_(?:Barcode|Image)Format) = )(\d+);/$1 . sprintf("0x%04X;", $2)/ge' src/bindings.rs
-	Ok(())
 }

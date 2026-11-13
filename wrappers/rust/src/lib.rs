@@ -22,7 +22,7 @@ mod bindings {
 use bindings::*;
 
 use paste::paste;
-use std::ffi::{c_char, c_int, c_void, CStr, CString, NulError};
+use std::ffi::{CStr, CString, NulError, c_char, c_int, c_void};
 use std::fmt::{Display, Formatter};
 use std::marker::PhantomData;
 use std::mem::transmute;
@@ -407,15 +407,17 @@ impl<'a> ImageView<'a> {
 		row_stride: U,
 		pix_stride: U,
 	) -> Result<Self, Error> {
-		let iv = ZXing_ImageView_new(
-			ptr,
-			Self::try_into_int(width)?,
-			Self::try_into_int(height)?,
-			format as ZXing_ImageFormat,
-			Self::try_into_int(row_stride)?,
-			Self::try_into_int(pix_stride)?,
-		);
-		last_error_if_null_or!(iv, ImageView(Rc::new(ImageViewOwner(iv, PhantomData))))
+		unsafe {
+			let iv = ZXing_ImageView_new(
+				ptr,
+				Self::try_into_int(width)?,
+				Self::try_into_int(height)?,
+				format as ZXing_ImageFormat,
+				Self::try_into_int(row_stride)?,
+				Self::try_into_int(pix_stride)?,
+			);
+			last_error_if_null_or!(iv, ImageView(Rc::new(ImageViewOwner(iv, PhantomData))))
+		}
 	}
 
 	pub fn from_slice<T: TryInto<c_int>>(data: &'a [u8], width: T, height: T, format: ImageFormat) -> Result<Self, Error> {
