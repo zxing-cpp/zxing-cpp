@@ -278,7 +278,7 @@ zint_symbol* CreatorOptions::zint() const
 		};
 
 		if (zint->symbology == 0)
-			throw std::invalid_argument(StrCat("Unsupported barcode format for creation: ", ToString(format())));
+			throw std::invalid_argument(StrCat("Unsupported format: ", ToString(format())));
 
 		if (format() == Code128 && gs1())
 			zint->symbology = BARCODE_GS1_128;

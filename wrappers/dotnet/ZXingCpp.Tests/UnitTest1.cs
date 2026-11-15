@@ -35,7 +35,7 @@ public class UnitTest1
 	{
 		using var options = new CreatorOptions(BarcodeFormat.None);
 		var error = Assert.Throws<Exception>(() => new Barcode("hello", options));
-		Assert.Contains("Unsupported barcode format", error.Message);
+		Assert.Contains("Unsupported format", error.Message);
 	}
 
 	private static byte[] Ean8Pixels() => "0000101000101101011110111101011011101010100111011100101000100101110010100000"
