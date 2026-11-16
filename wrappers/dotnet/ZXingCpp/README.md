@@ -43,7 +43,7 @@ dotnet run -- <image-file-name> [barcode-format-list]
 ```cs
 using ZXingCpp;
 
-var barcode = new Barcode(args[1], BarcodeFormat.Parse(args[0]));
+using var barcode = new Barcode(args[1], BarcodeFormat.Parse(args[0]));
 File.WriteAllText(args[2], barcode.ToSVG());
 ```
 
