@@ -424,3 +424,12 @@ TEST(CreateBarcodeTest, RandomDataBar)
 	randomTest(DataBarExp);
 }
 #endif // ZXING_READERS
+
+TEST(CreateBarcodeTest, WriteBarcodeToUtf8)
+{
+	auto bc = CreateBarcodeFromText("abcd", {Code128});
+	auto utf8 = WriteBarcodeToUtf8(bc, WriterOptions());
+	EXPECT_EQ(utf8, "          ██ █  █    █  █ ██    █  █    ██ █    █ ██  █    █  ██ ██ ███ ███ ██   ███ █ ██          \n");
+	utf8 = WriteBarcodeToUtf8(bc, WriterOptions().addQuietZones(false));
+	EXPECT_EQ(utf8, "██ █  █    █  █ ██    █  █    ██ █    █ ██  █    █  ██ ██ ███ ███ ██   ███ █ ██\n");
+}

@@ -8,11 +8,10 @@
 
 #include "BarcodeData.h"
 #include "BitMatrix.h"
+#include "BitMatrixIO.h"
 #include "CreateBarcode.h"
 #include "Log.h"
 #include "Version.h"
-
-#include <sstream>
 
 #ifdef ZXING_USE_ZINT
 #include <zint.h>
@@ -98,50 +97,30 @@ struct ShallowCloneWithOptions
 
 #endif // ZXING_USE_ZINT
 
-static std::string ToSVG(ImageView iv)
-{
-	if (!iv.data())
-		return {};
-
-	// see https://stackoverflow.com/questions/10789059/create-qr-code-in-vector-image/60638350#60638350
-
-	std::ostringstream res;
-
-	res << R"(<?xml version="1.0" encoding="UTF-8"?>)" << "\n"
-		<< R"(<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 )" << iv.width() << ' ' << iv.height()
-		<< R"(" stroke="none">)" << "\n"
-		<< "<path d=\"";
-
-	for (int y = 0; y < iv.height(); ++y)
-		for (int x = 0; x < iv.width(); ++x)
-			if (*iv.data(x, y) == 0)
-				res << "M" << x << "," << y << "h1v1h-1z";
-
-	res << "\"/>\n</svg>";
-
-	return res.str();
-}
-
 static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opts)
 {
 	bits.flipAll();
 	int width = opts.scale() > 0 ? bits.width() * opts.scale() : -opts.scale();
 	int height = isLinearCode ? std::clamp(width / 2, 50, 300) : opts.scale() > 0 ? bits.height() * opts.scale() : -opts.scale();
 	auto symbol = Inflate(std::move(bits), width, height, opts.addQuietZones() ? 10 : 0);
+	if (opts.rotate() && opts.rotate() <= 180)
+		symbol.rotate180();
+	if (opts.rotate() % 180 == 90)
+		symbol.rotate90();
 	auto bitmap = ToMatrix<uint8_t>(symbol);
 	auto iv = Image(symbol.width(), symbol.height());
 	std::memcpy(const_cast<uint8_t*>(iv.data()), bitmap.data(), iv.width() * iv.height());
 	return iv;
 }
 
-std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const WriterOptions& options)
+std::string WriteBarcodeToSVG(const Barcode& barcode, const WriterOptions& options)
 {
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto* zint = barcode.d->zint.get();
 
 	if (!zint)
 #endif
-		return ToSVG(barcode.symbol());
+		return ToSVG(barcode.symbol().rotated(options.rotate()), options.invert());
 
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto tmp_zint = ShallowCloneWithOptions(zint, options);
@@ -156,7 +135,7 @@ std::string WriteBarcodeToSVG(const Barcode& barcode, [[maybe_unused]] const Wri
 #endif
 }
 
-Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterOptions& options)
+Image WriteBarcodeToImage(const Barcode& barcode, const WriterOptions& options)
 {
 #if defined(ZXING_WRITERS) && defined(ZXING_USE_ZINT)
 	auto* zint = barcode.d->zint.get();
@@ -183,40 +162,33 @@ Image WriteBarcodeToImage(const Barcode& barcode, [[maybe_unused]] const WriterO
 #endif
 }
 
-std::string WriteBarcodeToUtf8(const Barcode& barcode, [[maybe_unused]] const WriterOptions& options)
+std::string WriteBarcodeToUtf8(const Barcode& barcode, const WriterOptions& options)
 {
-	auto iv = barcode.symbol();
-	if (!iv.data())
-		return {};
-
-	constexpr auto map = std::array{" ", "▀", "▄", "█"};
-	std::ostringstream res;
 	bool invert = !options.invert();
 
-	Image buffer;
-	if (options.addQuietZones()) {
-		buffer = Image(iv.width() + 2, iv.height() + 2);
-		memset(const_cast<uint8_t*>(buffer.data()), 0xff, buffer.rowStride() * buffer.height());
-		for (int y = 0; y < iv.height(); y++)
-			memcpy(const_cast<uint8_t*>(buffer.data(1, y + 1)), iv.data(0, y), iv.width());
-		iv = barcode.format() & BarcodeFormat::AllLinear ? iv.cropped(0, 1, buffer.width(), buffer.height() - 2) : buffer;
-	}
+	Image buffer = WriteBarcodeToImage(barcode, WriterOptions().addQuietZones(options.addQuietZones()).rotate(options.rotate()));
+	ImageView iv = buffer;
+	if (barcode.symbology() == BarcodeFormat::EANUPC && options.rotate() % 180 == 0)
+		iv = iv.cropped(0, iv.height() / 2 - 1, iv.width(), 2); // don't print the extending guard bars
 
+	constexpr auto map = std::array{" ", "▀", "▄", "█"};
+	std::string res;
+	res.reserve(iv.width() * iv.height() / 2 + 1);
 	for (int y = 0; y < iv.height(); y += 2) {
-		// for linear barcodes, only print line pairs that are distinct from the previous one
-		if (barcode.format() & BarcodeFormat::AllLinear && y > 1 && y < iv.height() - 1
+		// for linear barcodes in horizontal orientation, only print line pairs that are distinct from the previous one
+		if (barcode.format() & BarcodeFormat::AllLinear && options.rotate() % 180 == 0 && y > 1 && y < iv.height() - 1
 			&& memcmp(iv.data(0, y), iv.data(0, y - 2), 2 * iv.rowStride()) == 0)
 			continue;
 
 		for (int x = 0; x < iv.width(); ++x) {
 			int tp = bool(*iv.data(x, y)) ^ invert;
 			int bt = (iv.height() == 1 && tp) || (y + 1 < iv.height() && (bool(*iv.data(x, y + 1)) ^ invert));
-			res << map[tp | (bt << 1)];
+			res += map[tp | (bt << 1)];
 		}
-		res << '\n';
+		res += '\n';
 	}
 
-	return res.str();
+	return res;
 }
 
 } // namespace ZXing

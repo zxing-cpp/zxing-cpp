@@ -115,11 +115,11 @@ public:
 	*/
 	void setRegion(int left, int top, int width, int height);
 
-	void rotate90();
+	void rotate90(); // Rotate the matrix 90 degrees counter clockwise
 
-	void rotate180();
+	void rotate180(); // Rotate the matrix 180 degrees
 
-	void mirror();
+	void mirror(); // Mirror the matrix horizontally
 
 	/**
 	* Find the rectangle that contains all non-white pixels. Useful for detection of 'pure' barcodes.
