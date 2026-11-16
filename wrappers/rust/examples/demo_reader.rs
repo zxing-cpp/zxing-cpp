@@ -24,6 +24,7 @@ fn main() -> anyhow::Result<()> {
 		.try_invert(!fast)
 		.try_rotate(!fast)
 		.try_downscale(!fast)
+		.try_denoise(!fast)
 		.return_errors(true);
 
 	#[cfg(feature = "image")]
