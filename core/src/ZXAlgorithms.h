@@ -239,7 +239,7 @@ inline T FromString(std::string_view sv)
 	T val = {};
 	auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), val);
 	if (ec != std::errc() || ptr != sv.data() + sv.size())
-		throw std::invalid_argument(StrCat("failed to parse '", TypeName<T>(), "' from '", sv, "'"));
+		throw std::invalid_argument(StrCat("Failed to parse '", TypeName<T>(), "' from '", sv, "'"));
 
 	return val;
 }

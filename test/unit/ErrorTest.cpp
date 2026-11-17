@@ -34,10 +34,10 @@ TEST(ErrorTest, Empty)
 
 TEST(ErrorTest, WithMsg)
 {
-	Error e = FormatError("something is wrong"); int line = __LINE__;
+	Error e = FormatError("Something is wrong"); int line = __LINE__;
 
 	EXPECT_TRUE(e);
 	EXPECT_EQ(e, Error::Format);
-	EXPECT_EQ(e.msg(), "something is wrong");
+	EXPECT_EQ(e.msg(), "Something is wrong");
 	EXPECT_EQ(e.location(), "ErrorTest.cpp:" + std::to_string(line));
 }

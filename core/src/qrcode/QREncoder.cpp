@@ -283,7 +283,7 @@ void TerminateBits(int numDataBytes, BitArray& bits)
 {
 	int capacity = numDataBytes * 8;
 	if (bits.size() > capacity) {
-		throw std::invalid_argument("data bits cannot fit in the QR Code" + std::to_string(bits.size()) + " > "
+		throw std::invalid_argument("Data bits cannot fit in the QR Code" + std::to_string(bits.size()) + " > "
 									+ std::to_string(capacity));
 	}
 	for (int i = 0; i < 4 && bits.size() < capacity; ++i) {

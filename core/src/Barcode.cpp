@@ -257,13 +257,13 @@ Barcode MergeStructuredAppendSequence(const Barcodes& barcodes)
 		res.d->content.append(barcode.d->content);
 
 	if (allBarcodes.back().sequenceSize() != Size(allBarcodes))
-		res.d->error = FormatError("incomplete sequence during structured append sequence merging");
+		res.d->error = FormatError("Incomplete sequence during structured append sequence merging");
 	else if (!std::all_of(allBarcodes.begin(), allBarcodes.end(),
 						  [&](Barcode& it) { return it.format() == allBarcodes.front().format(); }))
-		res.d->error = FormatError("format not matching during structured append sequence merging");
+		res.d->error = FormatError("Format not matching during structured append sequence merging");
 	else if (!std::all_of(allBarcodes.begin(), allBarcodes.end(),
 						  [&](Barcode& it) { return it.sequenceId() == allBarcodes.front().sequenceId(); }))
-		res.d->error = FormatError("sequenceIDs not matching during structured append sequence merging");
+		res.d->error = FormatError("SequenceIDs not matching during structured append sequence merging");
 
 	return res;
 }

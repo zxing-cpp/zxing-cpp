@@ -664,7 +664,7 @@ namespace EdifactEncoder {
 	{
 		int len = Size(sb) - startPos;
 		if (len == 0) {
-			throw std::invalid_argument("buffer must not be empty");
+			throw std::invalid_argument("Buffer must not be empty");
 		}
 		int c1 = sb.at(startPos);
 		int c2 = len >= 2 ? sb.at(startPos + 1) : 0;

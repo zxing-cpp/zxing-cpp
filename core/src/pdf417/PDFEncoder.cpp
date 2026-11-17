@@ -452,8 +452,8 @@ static BarcodeMatrix EncodeLowLevel(const std::vector<int>& fullCodewords, int c
 * Determine optimal nr of columns and rows for the specified number of
 * codewords.
 *
-* @param sourceCodeWords number of code words
-* @param errorCorrectionCodeWords number of error correction code words
+* @param sourceCodeWords number of codewords
+* @param errorCorrectionCodeWords number of error correction codewords
 */
 static void DetermineDimensions(int minCols, int maxCols, int minRows, int maxRows, int sourceCodeWords, int errorCorrectionCodeWords, int& outCols, int& outRows)
 {
@@ -524,7 +524,7 @@ Encoder::generateBarcodeLogic(const std::wstring& msg, int errorCorrectionLevel)
 
 	//2. step: construct data codewords
 	if (sourceCodeWords + errorCorrectionCodeWords + 1 > 929) { // +1 for symbol length CW
-		throw std::invalid_argument("Encoded message contains to many code words, message too big");
+		throw std::invalid_argument("Encoded message contains to many codewords, message too big");
 	}
 	int n = sourceCodeWords + pad + 1;
 	std::vector<int> dataCodewords;

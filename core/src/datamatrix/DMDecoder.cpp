@@ -160,7 +160,7 @@ static void DecodeC40OrTextSegment(BitSource& bits, Content& result, Mode mode)
 				else if (cValue < Size(BASIC_SET_CHARS))
 					result.push_back(upperShift(BASIC_SET_CHARS[cValue]));
 				else
-					throw FormatError("invalid value in C40 or Text segment");
+					throw FormatError("Invalid value in C40 or Text segment");
 				break;
 			case 1: result.push_back(upperShift(cValue)); break;
 			case 2:
@@ -169,7 +169,7 @@ static void DecodeC40OrTextSegment(BitSource& bits, Content& result, Mode mode)
 				else if (cValue == 30) // Upper Shift
 					upperShift.set = true;
 				else
-					throw FormatError("invalid value in C40 or Text segment");
+					throw FormatError("Invalid value in C40 or Text segment");
 				break;
 			case 3:
 				if (mode == Mode::C40)
@@ -177,9 +177,9 @@ static void DecodeC40OrTextSegment(BitSource& bits, Content& result, Mode mode)
 				else if (cValue < Size(TEXT_SHIFT3_SET_CHARS))
 					result.push_back(upperShift(TEXT_SHIFT3_SET_CHARS[cValue]));
 				else
-					throw FormatError("invalid value in C40 or Text segment");
+					throw FormatError("Invalid value in C40 or Text segment");
 				break;
-			default: throw FormatError("invalid value in C40 or Text segment"); ;
+			default: throw FormatError("Invalid value in C40 or Text segment"); ;
 			}
 		}
 	}
@@ -195,7 +195,7 @@ static void DecodeAnsiX12Segment(BitSource& bits, Content& result)
 			// X12 segment terminator <CR>, separator *, sub-element separator >, space
 			static const char segChars[4] = {'\r', '*', '>', ' '};
 			if (cValue < 0)
-				throw FormatError("invalid value in AnsiX12 segment");
+				throw FormatError("Invalid value in AnsiX12 segment");
 			else if (cValue < 4)
 				result.push_back(segChars[cValue]);
 			else if (cValue < 14) // 0 - 9
@@ -203,7 +203,7 @@ static void DecodeAnsiX12Segment(BitSource& bits, Content& result)
 			else if (cValue < 40) // A - Z
 				result.push_back((char)(cValue + 51));
 			else
-				throw FormatError("invalid value in AnsiX12 segment");
+				throw FormatError("Invalid value in AnsiX12 segment");
 		}
 	}
 }
@@ -261,7 +261,7 @@ static void DecodeBase256Segment(BitSource& bits, Content& result)
 
 	// We're seeing NegativeArraySizeException errors from users.
 	if (count < 0)
-		throw FormatError("invalid count in Base256 segment");
+		throw FormatError("Invalid count in Base256 segment");
 
 	result.reserve(count);
 	for (int i = 0; i < count; i++) {
@@ -298,7 +298,7 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 		while (!done && bits.available() >= 8) {
 			int oneByte = bits.readBits(8);
 			switch (oneByte) {
-			case 0: setError(FormatError("invalid 0 code word")); break;
+			case 0: setError(FormatError("Invalid 0 codeword")); break;
 			case 129: done = true; break; // Pad -> we are done, ignore the rest of the bits
 			case 230: DecodeC40OrTextSegment(bits, result, Mode::C40); break;
 			case 231: DecodeBase256Segment(bits, result); break;
@@ -319,13 +319,13 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 				break;
 			case 233: // Structured Append
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.6.1
-					setError(FormatError("structured append tag must be first code word"));
+					setError(FormatError("Structured append tag must be first codeword"));
 				ParseStructuredAppend(bits, sai);
 				firstFNC1Position = 5;
 				break;
 			case 234: // Reader Programming
 				if (!firstCodeword) // Must be first ISO 16022:2006 5.2.4.9
-					setError(FormatError("reader programming tag must be first code word"));
+					setError(FormatError("Reader programming tag must be first codeword"));
 				readerInit = true;
 				break;
 			case 235: upperShift.set = true; break; // Upper Shift (shift to Extended ASCII)
@@ -347,10 +347,10 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 				} else if (oneByte <= 229) { // 2-digit data 00-99 (Numeric Value + 130)
 					result.append(ToString(oneByte - 130, 2));
 				} else if (oneByte >= 242) { // Not to be used in ASCII encodation
-					// work around encoders that use unlatch to ASCII as last code word (ask upstream)
+					// work around encoders that use unlatch to ASCII as last codeword (ask upstream)
 					if (oneByte == 254 && bits.available() == 0)
 						break;
-					setError(FormatError("invalid code word"));
+					setError(FormatError("Invalid codeword"));
 					break;
 				}
 			}
@@ -385,7 +385,7 @@ static DecoderResult DoDecode(const BitMatrix& bits)
 	// Read codewords
 	ByteArray codewords = CodewordsFromBitMatrix(bits, *version);
 	if (codewords.empty())
-		return FormatError("Invalid number of code words");
+		return FormatError("Invalid number of codewords");
 
 	bool fix259 = false; // see https://github.com/zxing-cpp/zxing-cpp/issues/259
 retry:

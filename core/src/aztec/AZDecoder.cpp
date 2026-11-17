@@ -138,7 +138,7 @@ static std::tuple<BitArray, int, double> CorrectBits(const DetectorResult& ddata
 	int numECCodewords = numCodewords - numDataCodewords;
 
 	if (numCodewords < numDataCodewords)
-		throw FormatError("Invalid number of code words");
+		throw FormatError("Invalid number of codewords");
 
 	auto dataWords = ToInts<int>(rawbits, codewordSize, numCodewords, Size(rawbits) % codewordSize);
 	auto uec = ReedSolomonDecode(GF2nAztec(codewordSize), dataWords, numECCodewords);

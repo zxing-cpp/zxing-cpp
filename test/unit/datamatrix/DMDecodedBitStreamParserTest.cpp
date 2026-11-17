@@ -53,10 +53,10 @@ TEST(DMDecodeTest, Ascii)
 
 TEST(DMDecodeTest, AsciiError)
 {
-	// ASCII err on invalid code word
+	// ASCII err on invalid codeword
 	EXPECT_EQ(parse({66, 250, 68}).error(), Error::Format);
 
-	// ASCII err on invalid code word at end (currently failing)
+	// ASCII err on invalid codeword at end (currently failing)
 	EXPECT_EQ(parse({66, 67, 68, 250}).error(), Error::Format);
 
 	// ASCII accept extra (illegal) unlatch at end

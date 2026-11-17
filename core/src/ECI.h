@@ -14,8 +14,8 @@ namespace ZXing {
 enum class ECI : int
 {
 	Unknown    = -1,
-	Cp437      = 2, // obsolete
-	ISO8859_1  = 3,
+	Cp437      = 2, // also 0, obsolete
+	ISO8859_1  = 3, // also 1
 	ISO8859_2  = 4,
 	ISO8859_3  = 5,
 	ISO8859_4  = 6,

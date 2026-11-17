@@ -105,7 +105,7 @@ func WithQuietZones(v bool) WriterOption {
 func createAndConfigureWriterOptions(opts ...WriterOption) *C.ZXing_WriterOptions {
 	wo := C.ZXing_WriterOptions_new()
 	if wo == nil {
-		panic("failed to create WriterOptions") // only out of memory should cause this, so panic is reasonable
+		panic("Failed to create WriterOptions") // only out of memory should cause this, so panic is reasonable
 	}
 	for _, opt := range opts {
 		opt(wo)
