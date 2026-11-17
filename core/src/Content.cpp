@@ -227,7 +227,7 @@ ByteArray Content::bytesECI() const
 
 	if (hasECI)
 		ForEachECIBlock([&](ECI eci, int begin, int end) {
-			if (hasECI)
+			if (hasECI && eci != ECI::Unknown)
 				res.append(ToString(eci));
 
 			for (auto b : bytes.asView(begin, end - begin)) {

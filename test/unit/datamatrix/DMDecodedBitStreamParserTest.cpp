@@ -61,6 +61,10 @@ TEST(DMDecodeTest, AsciiError)
 
 	// ASCII accept extra (illegal) unlatch at end
 	EXPECT_FALSE(parse({66, 67, 68, 254}).error());
+
+	// ECI latch, ECI codeword 0 (invalid), then "a"
+	EXPECT_EQ(parse({241, 0, 98}).error(), Error::Format);
+	EXPECT_EQ(parse({241, 0, 98}).content().bytesECI().asString(), "]d1a");
 }
 
 // Most of the following examples are taken from the DMHighLevelEncodeTest.cpp tests.

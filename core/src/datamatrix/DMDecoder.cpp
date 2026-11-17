@@ -84,14 +84,22 @@ struct Shift128
 static ECI ParseECIValue(BitSource& bits)
 {
 	int firstByte = bits.readBits(8);
+	if (firstByte == 0 || firstByte > 207)
+		return ECI::Unknown;
+
 	if (firstByte <= 127)
 		return ECI(firstByte - 1);
 
 	int secondByte = bits.readBits(8);
+	if (secondByte == 0 || secondByte >= 255)
+		return ECI::Unknown;
+
 	if (firstByte <= 191)
 		return ECI((firstByte - 128) * 254 + 127 + secondByte - 1);
 
 	int thirdByte = bits.readBits(8);
+	if (thirdByte == 0 || thirdByte >= 255)
+		return ECI::Unknown;
 
 	return ECI((firstByte - 192) * 64516 + 16383 + (secondByte - 1) * 254 + thirdByte - 1);
 }
@@ -340,7 +348,12 @@ DecoderResult Decode(ByteArray&& bytes, const bool isDMRE)
 			case 238: DecodeAnsiX12Segment(bits, result); break;
 			case 239: DecodeC40OrTextSegment(bits, result, Mode::TEXT); break;
 			case 240: DecodeEdifactSegment(bits, result); break;
-			case 241: result.switchEncoding(ParseECIValue(bits)); break;
+			case 241:
+				if (auto eci = ParseECIValue(bits); eci != ECI::Unknown)
+					result.switchEncoding(eci);
+				else
+					setError(FormatError("Invalid ECI number"));
+				break;
 			default:
 				if (oneByte <= 128) { // ASCII data (ASCII value + 1)
 					result.push_back(upperShift(oneByte) - 1);
