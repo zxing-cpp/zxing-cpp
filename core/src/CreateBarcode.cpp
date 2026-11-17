@@ -62,7 +62,7 @@ ZX_PROPERTY(std::string, options)
 #undef ZX_PROPERTY
 
 #define ZX_RO_PROPERTY(TYPE, NAME) \
-	std::optional<TYPE> CreatorOptions::NAME() const noexcept { return JsonGet<TYPE>(d->options, #NAME); }
+	std::optional<TYPE> CreatorOptions::NAME() const { return JsonGet<TYPE>(d->options, #NAME); }
 
 ZX_RO_PROPERTY(std::string, ecLevel);
 ZX_RO_PROPERTY(std::string, eci);

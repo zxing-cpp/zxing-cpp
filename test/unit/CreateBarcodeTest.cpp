@@ -389,6 +389,8 @@ TEST(CreateBarcodeTest, CreatorOptions)
 #if ZXING_ENABLE_QRCODE
 	bc = CreateBarcodeFromText("12345", {QRCode, "version=5"});
 	EXPECT_EQ(bc.symbol().height(), 37);
+
+	EXPECT_THROW(CreateBarcodeFromText("12345", {QRCode, "dataMask=invalid"}), std::invalid_argument);
 #endif // ZXING_ENABLE_QRCODE
 
 #if defined(ZXING_READERS) && ZXING_ENABLE_QRCODE

@@ -61,7 +61,7 @@ public:
 #undef ZX_PROPERTY
 
 #define ZX_RO_PROPERTY(TYPE, NAME) \
-	std::optional<TYPE> NAME() const noexcept;
+	std::optional<TYPE> NAME() const;
 
 	/// EcLevel, e.g. "30%", see also libzint docs for supported values per symbology
 	ZX_RO_PROPERTY(std::string, ecLevel);
