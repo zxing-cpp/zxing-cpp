@@ -192,7 +192,7 @@ static std::shared_ptr<BitMatrix> CalculateMatrix(const uint8_t* __restrict lumi
 // (max - min > MIN_DYNAMIC_RANGE) ? (max + min) / 2 : 0
 static Matrix<T_t> BlockThresholds(const ImageView iv)
 {
-	int subWidth = (iv.width() + BLOCK_SIZE - 1) / BLOCK_SIZE; // ceil(width/BS)
+	int subWidth = (iv.width() + BLOCK_SIZE - 1) / BLOCK_SIZE;   // ceil(width/BS)
 	int subHeight = (iv.height() + BLOCK_SIZE - 1) / BLOCK_SIZE; // ceil(height/BS)
 
 	Matrix<T_t> thresholds(subWidth, subHeight);
@@ -382,10 +382,9 @@ std::shared_ptr<const BitMatrix> HybridBinarizer::getBlackMatrix() const
 		return ThresholdImage(_buffer, thrs);
 #else
 		const uint8_t* luminances = _buffer.data();
-		int subWidth = (width() + BLOCK_SIZE - 1) / BLOCK_SIZE; // ceil(width/BS)
+		int subWidth = (width() + BLOCK_SIZE - 1) / BLOCK_SIZE;   // ceil(width/BS)
 		int subHeight = (height() + BLOCK_SIZE - 1) / BLOCK_SIZE; // ceil(height/BS)
-		auto blackPoints =
-			CalculateBlackPoints(luminances, subWidth, subHeight, width(), height(), _buffer.rowStride());
+		auto blackPoints = CalculateBlackPoints(luminances, subWidth, subHeight, width(), height(), _buffer.rowStride());
 
 		return CalculateMatrix(luminances, subWidth, subHeight, width(), height(), _buffer.rowStride(), blackPoints);
 #endif
@@ -395,4 +394,4 @@ std::shared_ptr<const BitMatrix> HybridBinarizer::getBlackMatrix() const
 	}
 }
 
-} // ZXing
+} // namespace ZXing
