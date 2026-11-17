@@ -289,6 +289,8 @@ DecoderResult Decode(ByteArray&& bytes, const int mode)
 		}
 	} catch (std::out_of_range&) { // see GetMessage()/ParseECIValue(): lookahead past a truncated/malicious bit stream
 		return FormatError("Truncated bit stream");
+	} catch (const Error& e) {
+		return e;
 	}
 
 	return DecoderResult(std::move(result))
