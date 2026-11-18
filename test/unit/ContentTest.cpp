@@ -172,6 +172,43 @@ TEST(ContentTest, ECI)
 #endif
 		EXPECT_EQ(c.bytesECI().asString(), std::string_view("]d4\\000003C:\\\\Test\\000026Täßt"));
 	}
+
+	{ // binary only
+		Content c;
+		c.symbology = {'Q', '1', 1};
+		c.defaultCharset = CharacterSet::BINARY;
+		c.switchEncoding(CharacterSet::Unknown);
+		c.append("A\xE9\\");
+#ifndef ZXING_READERS
+		c.utf8Cache = {"A\xC3\xA9\\"};
+#endif
+		EXPECT_EQ(c.text(TextMode::ECI), "]Q2\\000899A\xC3\xA9\\\\");
+	}
+
+	{ // binary fallback
+		Content c;
+		c.symbology = {'Q', '1', 1};
+		c.defaultCharset = CharacterSet::BINARY;
+		c.switchEncoding(CharacterSet::ASCII);
+		c.append("9876543210");
+		c.switchEncoding(CharacterSet::Unknown);
+		c.append("ab\\");
+#ifndef ZXING_READERS
+		c.utf8Cache = {"9876543210", "ab\\"};
+#endif
+		EXPECT_EQ(c.text(TextMode::ECI), "]Q2\\0000269876543210\\000899ab\\\\");
+	}
+
+	{ // explicit ECI
+		Content c;
+		c.symbology = {'Q', '1', 1};
+		c.switchEncoding(static_cast<ECI>(898));
+		c.append("ab");
+#ifndef ZXING_READERS
+		c.utf8Cache = {"ab"};
+#endif
+		EXPECT_EQ(c.text(TextMode::ECI), "]Q2\\000898ab");
+	}
 }
 #endif // defined(ZXING_READERS) || defined(ZXING_USE_ZINT)
 

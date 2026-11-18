@@ -124,7 +124,7 @@ std::string Content::render(bool withECI) const
 #endif
 		if (withECI) {
 			// then find the eci to report back in the ECI designator
-			auto outEci = IsText(inEci) ? ECI::UTF8 : eci;
+			auto outEci = IsText(inEci) ? ECI::UTF8 : eci == ECI::Unknown ? inEci : eci;
 
 			if (lastECI != outEci)
 				res += ToString(outEci);
@@ -162,7 +162,7 @@ std::string Content::render(bool withECI) const
 	for (int i = 0; i < Size(encodings); ++i) {
 		const auto eci = encodings[i].eci;
 		const auto inEci = IsText(eci) ? eci : eci == ECI::Unknown ? ToECI(fallbackCS) : ECI::Binary;
-		const auto outEci = IsText(inEci) ? ECI::UTF8 : eci;
+		const auto outEci = IsText(inEci) ? ECI::UTF8 : eci == ECI::Unknown ? inEci : eci;
 
 		if (lastECI != outEci)
 			res += ToString(outEci);
