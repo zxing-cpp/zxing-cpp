@@ -201,16 +201,17 @@ std::string ToUtf8(std::wstring_view str)
 	return utf8;
 }
 
-static bool iswgraph(wchar_t wc)
+static bool iswgraph(uint32_t wc)
 {
 	/* Consider all legal codepoints as graphical except for:
 	 * - whitespace
 	 * - C0 and C1 control characters
 	 * - U+2028 and U+2029 (line/para break)
 	 * - U+FFF9 through U+FFFB (interlinear annotation controls)
-	 * The following code is based on libmusls implementation */
+	 * The following code is based on libmusls implementation.
+	 * Note: wc was originally of type wint_t, which is unsigned and the code below depends on that. */
 
-	if (wc == ' ' || (unsigned)wc - '\t' < 5)
+	if (wc == ' ' || wc - '\t' < 5)
 		return false;
 	if (wc < 0xff)
 		return ((wc + 1) & 0x7f) >= 0x21;
