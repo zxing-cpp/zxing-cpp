@@ -34,7 +34,7 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 		for (int i = 0; i < ecBlock.count; i++) {
 			auto& item = result[numResultBlocks++];
 			item._numDataCodewords = ecBlock.dataCodewords;
-			item._codewords.resize(ecBlocks.codewordsPerBlock + ecBlock.dataCodewords);
+			item._codewords.resize(ecBlocks.ecCodewordsPerBlock + ecBlock.dataCodewords);
 		}
 	}
 
@@ -51,7 +51,7 @@ std::vector<DataBlock> DataBlock::GetDataBlocks(const ByteArray& rawCodewords, c
 	}
 	longerBlocksStartAt++;
 
-	int shorterBlocksNumDataCodewords = shorterBlocksTotalCodewords - ecBlocks.codewordsPerBlock;
+	int shorterBlocksNumDataCodewords = shorterBlocksTotalCodewords - ecBlocks.ecCodewordsPerBlock;
 	// The last elements of result may be 1 element longer;
 	// first fill out as many elements as all of them have
 	int rawCodewordsOffset = 0;

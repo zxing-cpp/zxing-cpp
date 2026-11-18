@@ -609,20 +609,20 @@ const Version* Version::Model1(int number)
 
 Version::Version(int versionNumber, std::initializer_list<int> alignmentPatternCenters, const std::array<ECBlocks, 4>& ecBlocks)
 	: _versionNumber(versionNumber), _alignmentPatternCenters(alignmentPatternCenters), _ecBlocks(ecBlocks),
-	   _type(ecBlocks[0].codewordsPerBlock == 0 ? Type::rMQR : Type::Model2)
+	   _type(ecBlocks[0].ecCodewordsPerBlock == 0 ? Type::rMQR : Type::Model2)
 {
-	_totalCodewords = ecBlocks[1].totalDataCodewords(); // Use 1 (M) as 0 dummy for rMQR
+	_totalCodewords = ecBlocks[1].numCodewords(); // Use 1 (M) as 0 dummy for rMQR
 }
 
 Version::Version(int versionNumber, const std::array<ECBlocks, 4>& ecBlocks)
 	: _versionNumber(versionNumber),
 	  _ecBlocks(ecBlocks),
-	  _type(ecBlocks[0].codewordsPerBlock < 7 || ecBlocks[0].codewordsPerBlock == 8 ? Type::Micro : Type::Model1)
+	  _type(ecBlocks[0].ecCodewordsPerBlock < 7 || ecBlocks[0].ecCodewordsPerBlock == 8 ? Type::Micro : Type::Model1)
 {
 	// Symbol capacity includes remainder codewords, which the ECBlocks don't account for (e.g. for EClevel L, versions 13 and 14).
 	// See ISO 18004:2000 M.2 Table M.1
 	static constexpr int model1Codewords[] = {26, 46, 72, 100, 134, 170, 212, 256, 306, 358, 416, 476, 542, 610};
-	_totalCodewords = isModel1() ? model1Codewords[versionNumber - 1] : ecBlocks[0].totalDataCodewords();
+	_totalCodewords = isModel1() ? model1Codewords[versionNumber - 1] : ecBlocks[0].numCodewords();
 }
 
 bool Version::HasValidSize(const BitMatrix& bitMatrix, Type type)

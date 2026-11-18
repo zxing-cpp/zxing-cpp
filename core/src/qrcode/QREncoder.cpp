@@ -257,7 +257,7 @@ static bool WillFit(int numInputBits, const Version& version, ErrorCorrectionLev
 	int numBytes = version.totalCodewords();
 	// getNumECBytes = 130
 	auto& ecBlocks = version.ecBlocksForLevel(ecLevel);
-	int numEcBytes = ecBlocks.totalCodewords();
+	int numEcBytes = ecBlocks.numECCodewords();
 	// getNumDataBytes = 196 - 130 = 66
 	int numDataBytes = numBytes - numEcBytes;
 	int totalInputBytes = (numInputBits + 7) / 8;
@@ -538,7 +538,7 @@ EncodeResult Encode(const std::wstring& content, ErrorCorrectionLevel ecLevel, C
 	headerAndDataBits.appendBitArray(dataBits);
 
 	auto& ecBlocks = version->ecBlocksForLevel(ecLevel);
-	int numDataBytes = version->totalCodewords() - ecBlocks.totalCodewords();
+	int numDataBytes = version->totalCodewords() - ecBlocks.numECCodewords();
 
 	// Terminate the bits properly.
 	TerminateBits(numDataBytes, headerAndDataBits);

@@ -19,6 +19,15 @@
 using namespace ZXing;
 using namespace ZXing::QRCode;
 
+TEST(QRBitMatrixParserTest, ECBlockCodewordCounts)
+{
+	const ECBlocks blocks{10, {ECB{2, 20}, ECB{1, 21}}};
+	EXPECT_EQ(3, blocks.numBlocks());
+	EXPECT_EQ(30, blocks.numECCodewords());
+	EXPECT_EQ(61, blocks.numDataCodewords());
+	EXPECT_EQ(91, blocks.numCodewords());
+}
+
 TEST(QRBitMatrixParserTest, Model1CodewordCounts)
 {
 	constexpr int capacities[] = {26, 46, 72, 100, 134, 170, 212, 256, 306, 358, 416, 476, 542, 610};

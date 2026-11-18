@@ -33,18 +33,13 @@ struct ECB
 */
 struct ECBlocks
 {
-	int codewordsPerBlock;
+	int ecCodewordsPerBlock;
 	std::array<ECB, 2> blocks;
 
 	int numBlocks() const { return blocks[0].count + blocks[1].count; }
-
-	int totalCodewords() const { return codewordsPerBlock * numBlocks(); }
-
-	int totalDataCodewords() const
-	{
-		return blocks[0].count * (blocks[0].dataCodewords + codewordsPerBlock)
-			   + blocks[1].count * (blocks[1].dataCodewords + codewordsPerBlock);
-	}
+	int numECCodewords() const { return ecCodewordsPerBlock * numBlocks(); }
+	int numDataCodewords() const { return blocks[0].count * blocks[0].dataCodewords + blocks[1].count * blocks[1].dataCodewords; }
+	int numCodewords() const { return numDataCodewords() + numECCodewords(); }
 
 	const std::array<ECB, 2>& blockArray() const { return blocks; }
 };
