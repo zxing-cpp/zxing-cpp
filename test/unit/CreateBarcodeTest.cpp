@@ -401,6 +401,21 @@ TEST(CreateBarcodeTest, CreatorOptions)
 #endif // ZXING_READERS
 }
 
+#if defined(ZXING_USE_ZINT) && defined(ZXING_READERS) && ZXING_ENABLE_1D
+TEST(CreateBarcodeTest, CreatorOptionsAfterFailedCreation)
+{
+	CreatorOptions opts(EAN13);
+	EXPECT_THROW(CreateBarcodeFromText("1234567890123", opts), std::invalid_argument);
+
+	opts.format(Code128);
+	auto created = CreateBarcodeFromText("1234567890123", opts);
+	auto decoded = ReadBarcode(created.symbol(), ReaderOptions().isPure(true).binarizer(Binarizer::BoolCast));
+
+	EXPECT_EQ(created.format(), Code128);
+	EXPECT_EQ(decoded.format(), Code128);
+}
+#endif
+
 #if defined(ZXING_READERS) && ZXING_ENABLE_1D
 TEST(CreateBarcodeTest, RandomDataBar)
 {

@@ -53,8 +53,8 @@ struct CreatorOptions::Data
 // TODO: check return type
 #define ZX_PROPERTY(TYPE, NAME) \
 	const TYPE& CreatorOptions::NAME() const noexcept { return d->NAME; } \
-	CreatorOptions& CreatorOptions::NAME(TYPE v)& { return d->NAME = std::move(v), *this; } \
-	CreatorOptions&& CreatorOptions::NAME(TYPE v)&& { return d->NAME = std::move(v), std::move(*this); }
+	CreatorOptions& CreatorOptions::NAME(TYPE v)& { return d->NAME = std::move(v), d->zint.reset(), *this; } \
+	CreatorOptions&& CreatorOptions::NAME(TYPE v)&& { return d->NAME = std::move(v), d->zint.reset(), std::move(*this); }
 
 ZX_PROPERTY(BarcodeFormat, format)
 ZX_PROPERTY(std::string, options)
