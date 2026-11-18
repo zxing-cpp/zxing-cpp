@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 {
     int width, height;
     unsigned char* data;
-    // load your image data from somewhere. ImageFormat::Lum assumes grey scale image data.
+    // load your image data from somewhere. ImageFormat::Lum assumes grey scale pixels.
 
     auto image = ZXing::ImageView(data, width, height, ZXing::ImageFormat::Lum);
     auto options = ZXing::ReaderOptions().formats(ZXing::BarcodeFormat::QRCode);
@@ -109,7 +109,7 @@ A very simple example looks like this:
 
 int main(int argc, char** argv)
 {
-    auto barcode = ZXing::CreateBarcodeFromText("some text", ZXing::BarcodeFormat::QRCode);
+    auto barcode = ZXing::CreateBarcodeFromText("test", ZXing::BarcodeFormat::QRCode);
     auto svg = ZXing::WriteBarcodeToSVG(barcode);
 
     // see also ZXing::WriteBarcodeToImage()
