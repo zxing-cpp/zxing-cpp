@@ -40,11 +40,6 @@ static std::string Abbrev(std::string_view str, size_t maxLength)
 	return str.size() <= maxLength ? std::string(str) : std::string(str.substr(0, maxLength)) + "...";
 }
 
-static bool isImage(const fs::path& path)
-{
-	return Contains({".webp", ".png", ".jpg", ".pgm", ".gif"}, path.extension());
-}
-
 static int timeSince(std::chrono::steady_clock::time_point startTime)
 {
 	auto duration = std::chrono::steady_clock::now() - startTime;
