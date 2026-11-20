@@ -1,6 +1,4 @@
-/*
-* Copyright 2024 Axel Waggershauser
-*/
+// Copyright 2024 Axel Waggershauser
 // SPDX-License-Identifier: Apache-2.0
 
 #[cfg(test)]
