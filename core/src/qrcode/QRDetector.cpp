@@ -494,12 +494,12 @@ DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp)
 				br = *brCP;
 
 		brFound = image.isIn(br);
-		if (!brFound)
+		if (!brFound && FitSquareToPoints(image, fp.bl, fp.bl.size, 2, false))
 			br = brInter;
 	}
 
 	// otherwise or if finder patterns are not square, the simple estimation used by upstream is used as a best guess fallback
-	if (!image.isIn(br) || !FitSquareToPoints(image, fp.bl, fp.bl.size, 2, false)) {
+	if (!image.isIn(br)) {
 		br = fp.tr - fp.tl + fp.bl;
 		brOffset = PointF(0, 0);
 	}
