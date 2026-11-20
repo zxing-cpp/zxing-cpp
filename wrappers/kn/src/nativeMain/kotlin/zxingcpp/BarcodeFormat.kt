@@ -62,6 +62,7 @@ enum class BarcodeFormat(internal val cValue: ZXing_BarcodeFormat) {
 	RMQRCode       (ZXing_BarcodeFormat.ZXing_BarcodeFormat_RMQRCode),
 	DataMatrix     (ZXing_BarcodeFormat.ZXing_BarcodeFormat_DataMatrix),
 	MaxiCode       (ZXing_BarcodeFormat.ZXing_BarcodeFormat_MaxiCode),
+	WXCode         (ZXing_BarcodeFormat.ZXing_BarcodeFormat_WXCode),
 
 	Invalid        (ZXing_BarcodeFormat.ZXing_BarcodeFormat_Invalid);
 

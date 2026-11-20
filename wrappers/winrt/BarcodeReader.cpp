@@ -106,6 +106,8 @@ BarcodeFormat BarcodeReader::ConvertRuntimeToNative(BarcodeType type)
 		return BarcodeFormat::UPCA;
 	case BarcodeType::UPC_E:
 		return BarcodeFormat::UPCE;
+	case BarcodeType::WX_CODE:
+		return BarcodeFormat::WXCode;
 	default:
 		std::wstring typeAsString = type.ToString()->Begin();
 		throw std::invalid_argument("Unknown Barcode Type: " + ToUtf8(typeAsString));
@@ -155,6 +157,8 @@ BarcodeType BarcodeReader::ConvertNativeToRuntime(BarcodeFormat format)
 		return BarcodeType::UPC_A;
 	case BarcodeFormat::UPCE:
 		return BarcodeType::UPC_E;
+	case BarcodeFormat::WXCode:
+		return BarcodeType::WX_CODE;
 	default:
 		throw std::invalid_argument("Unknown Barcode Format ");
 	}

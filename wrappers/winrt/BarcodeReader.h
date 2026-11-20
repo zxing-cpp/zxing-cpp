@@ -32,7 +32,8 @@ public enum class BarcodeType : int {
 	RSS_EXPANDED,
 	DATA_BAR_LIMITED,
 	UPC_A,
-	UPC_E
+	UPC_E,
+	WX_CODE
 };
 
 ref class ReadResult;

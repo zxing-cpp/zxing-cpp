@@ -80,6 +80,7 @@ public class BarcodeReader(public var options: Options = Options()) {
 		RMQR_CODE           (0x7251),
 		DATA_MATRIX         (0x2064),
 		MAXI_CODE           (0x2055),
+		WX_CODE             (0x2077),
 	}
 
 	public enum class ContentType {

@@ -6,6 +6,7 @@ set (ZXING_SONAME 4) # see https://github.com/zxing-cpp/zxing-cpp/issues/333
 
 option (ZXING_USE_BUNDLED_ZINT "Use the bundled libzint for barcode creation/writing" ON)
 option (ZXING_ENABLE_UNICODE "Enable UTF-8 to/from ECI character-set conversion" ON)
+option (ZXING_ENABLE_WXCODE "Enable experimental WX Code reading" OFF)
 foreach(format 1D AZTEC DATAMATRIX MAXICODE PDF417 QRCODE)
     option ("ZXING_ENABLE_${format}" "Enable support for ${format} barcodes" ON)
 endforeach()
@@ -26,6 +27,10 @@ endif()
 
 if (NOT DEFINED ZXING_READERS)
     set (ZXING_READERS ON)
+endif()
+
+if (NOT ZXING_READERS)
+    set (ZXING_ENABLE_WXCODE OFF)
 endif()
 
 set (ZXING_WRITERS_NEW OFF)
@@ -474,7 +479,24 @@ if (ZXING_WRITERS_OLD AND ZXING_ENABLE_QRCODE)
     )
 endif()
 
+if (ZXING_ENABLE_WXCODE)
+    set (WXCODE_FILES
+        src/wxcode/WXReader.h
+        src/wxcode/WXReader.cpp
+        src/wxcode/WXGrid.h
+        src/wxcode/WXConstants.h
+        src/wxcode/WXDetector.h
+        src/wxcode/WXDetector.cpp
+        src/wxcode/WXDecoder.h
+        src/wxcode/WXDecoder.cpp
+        src/wxcode/WXFormatInformation.h
+        src/wxcode/WXFormatInformation.cpp
+        src/wxcode/WXPayload.h
+        src/wxcode/WXPayload.cpp
+    )
+endif()
 source_group (Sources FILES ${COMMON_FILES})
+source_group (Sources\\wxcode FILES ${WXCODE_FILES})
 source_group (Sources\\aztec FILES ${AZTEC_FILES})
 source_group (Sources\\datamatrix FILES ${DATAMATRIX_FILES})
 source_group (Sources\\maxicode FILES ${MAXICODE_FILES})
@@ -488,6 +510,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 
 add_library (ZXing
+    ${WXCODE_FILES}
     ${COMMON_FILES}
     ${AZTEC_FILES}
     ${DATAMATRIX_FILES}

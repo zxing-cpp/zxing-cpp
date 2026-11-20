@@ -32,6 +32,10 @@
 #include "qrcode/QRReader.h"
 #endif
 
+#if ZXING_ENABLE_WXCODE
+#include "wxcode/WXReader.h"
+#endif
+
 #include <memory>
 
 namespace ZXing {
@@ -73,6 +77,10 @@ MultiFormatReader::MultiFormatReader(const ReaderOptions& opts) : _opts(opts)
 #if ZXING_ENABLE_1D
 	if (opts.tryHarder() && opts.hasAnyFormat(AllLinear))
 		_readers.emplace_back(new OneD::Reader(opts));
+#endif
+#if ZXING_ENABLE_WXCODE
+	if (opts.hasAnyFormat(WXCode))
+		_readers.emplace_back(new WXCode::Reader(opts, true));
 #endif
 }
 

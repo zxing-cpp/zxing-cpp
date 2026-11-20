@@ -49,6 +49,9 @@ public:
 	int width() const { return _buffer.width(); }
 	int height() const { return _buffer.height(); }
 
+	// Original pixels; inversion/closing affect the binary cache only.
+	const ImageView& luminance() const { return _buffer; }
+
 	/**
 	* Converts one row of luminance data to a vector of ints denoting the widths of the bars and spaces.
 	*/

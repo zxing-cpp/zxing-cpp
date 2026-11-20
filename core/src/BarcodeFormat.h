@@ -70,6 +70,7 @@
 	X(RMQRCode,         'Q', 'r', "mr G ", 145, ZXING_ENABLE_QRCODE,     "rMQR Code") \
 	X(DataMatrix,       'd', ' ', "mrwG ",  71, ZXING_ENABLE_DATAMATRIX, "Data Matrix") \
 	X(MaxiCode,         'U', ' ', "mr   ",  57, ZXING_ENABLE_MAXICODE,   "MaxiCode") \
+	X(WXCode,           'w', ' ', "mr   ",   0, ZXING_ENABLE_WXCODE,     "WX Code") \
 	/* Add new formats here */
 // clang-format on
 

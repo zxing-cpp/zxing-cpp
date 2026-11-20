@@ -45,6 +45,8 @@ std::string_view EnumName(BarcodeFormat format)
 
 BarcodeFormat BarcodeFormatFromString(std::string_view str)
 {
+	if (IsEqualIgnoreCaseAnd(str, "WeChatCode", " -_/"))
+		return BarcodeFormat::WXCode;
 	if (str.size() < 3)
 		throw std::invalid_argument(StrCat("This is not a valid barcode format: '", str, "'"));
 #define X(NAME, SYM, VAR, FLAGS, ZINT, ENABLED, HRI) \
@@ -75,7 +77,7 @@ bool operator&(BarcodeFormat a, BarcodeFormat b)
 		case 's': return ZXING_ENABLE_PDF417 && !Contains("lmp", VariantKey(b));
 		case 'p': return !Contains("lms", VariantKey(b)); // TODO: postal codes
 		case 'm':
-			return (ZXING_ENABLE_MAXICODE || ZXING_ENABLE_QRCODE || ZXING_ENABLE_DATAMATRIX || ZXING_ENABLE_AZTEC)
+			return (ZXING_ENABLE_MAXICODE || ZXING_ENABLE_QRCODE || ZXING_ENABLE_DATAMATRIX || ZXING_ENABLE_AZTEC || ZXING_ENABLE_WXCODE)
 				   && !Contains("lsp", VariantKey(b));
 		default: return true;
 		}

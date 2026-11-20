@@ -54,6 +54,12 @@ target_sources (UnitTest PRIVATE
     $<$<BOOL:${ZXING_ENABLE_QRCODE}>:qrcode/QRModeTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_QRCODE}>:qrcode/QRVersionTest.cpp>
     $<$<BOOL:${ZXING_ENABLE_QRCODE}>:qrcode/RMQRDecoderTest.cpp>
+    $<$<BOOL:${ZXING_ENABLE_WXCODE}>:wxcode/WXDecoderTest.cpp>
+    $<$<BOOL:${ZXING_ENABLE_WXCODE}>:wxcode/WXFormatInformationTest.cpp>
+    $<$<BOOL:${ZXING_ENABLE_WXCODE}>:wxcode/WXPayloadTest.cpp>
+    $<$<BOOL:${ZXING_ENABLE_WXCODE}>:wxcode/WXDetectorTest.cpp>
+    $<$<BOOL:${ZXING_ENABLE_WXCODE}>:wxcode/WXCodeReaderTest.cpp>
+    $<$<BOOL:${ZXING_ENABLE_WXCODE}>:wxcode/WXTestUtility.cpp>
 )
 endif()
 
@@ -104,6 +110,10 @@ endif()
 target_include_directories (UnitTest PRIVATE .)
 
 target_compile_options (UnitTest PRIVATE -DZXING_INTERNAL)
+
+if (ZXING_READERS AND ZXING_ENABLE_WXCODE AND ZXING_C_API)
+    target_compile_definitions(UnitTest PRIVATE WXCODE_TEST_C_API)
+endif()
 
 target_link_libraries (UnitTest ZXing::ZXing GTest::gtest_main GTest::gmock)
 

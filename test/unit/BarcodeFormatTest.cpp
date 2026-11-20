@@ -154,3 +154,18 @@ TEST(BarcodeFormatTest, BarcodeFormatSubset)
 	EXPECT_FALSE(EAN13 <= (EAN8 | DataBar));
 #endif // ZXING_ENABLE_1D
 }
+
+TEST(BarcodeFormatTest, WXCode)
+{
+	using enum BarcodeFormat;
+	for (auto name : {"WXCode", "WX_CODE", "wx code", "WeChatCode", "WeChat Code"})
+		EXPECT_EQ(BarcodeFormatFromString(name), WXCode);
+	EXPECT_EQ(Name(WXCode), "WX Code");
+	EXPECT_EQ(EnumName(WXCode), "WXCode");
+	EXPECT_EQ(Symbology(WXCode), WXCode);
+	EXPECT_FALSE(WXCode & QRCode);
+	EXPECT_FALSE(WXCode & AllCreatable);
+	EXPECT_EQ(bool(WXCode & AllReadable), bool(ZXING_ENABLE_WXCODE));
+	EXPECT_EQ(bool(WXCode & AllMatrix), bool(ZXING_ENABLE_WXCODE));
+	EXPECT_EQ(BarcodeFormats::list(WXCode).empty(), !ZXING_ENABLE_WXCODE);
+}
