@@ -449,4 +449,6 @@ TEST(CreateBarcodeTest, WriteBarcodeToUtf8)
 	EXPECT_EQ(utf8, "          ██ █  █    █  █ ██    █  █    ██ █    █ ██  █    █  ██ ██ ███ ███ ██   ███ █ ██          \n");
 	utf8 = WriteBarcodeToUtf8(bc, WriterOptions().addQuietZones(false));
 	EXPECT_EQ(utf8, "██ █  █    █  █ ██    █  █    ██ █    █ ██  █    █  ██ ██ ███ ███ ██   ███ █ ██\n");
+
+	EXPECT_EQ(WriteBarcodeToUtf8(Barcode(), WriterOptions()), "");
 }

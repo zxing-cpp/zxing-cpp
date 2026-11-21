@@ -99,6 +99,8 @@ struct ShallowCloneWithOptions
 
 static Image ToImage(BitMatrix bits, bool isLinearCode, const WriterOptions& opts)
 {
+	if (bits.empty())
+		return {};
 	bits.flipAll();
 	int width = opts.scale() > 0 ? bits.width() * opts.scale() : -opts.scale();
 	int height = isLinearCode ? std::clamp(width / 2, 50, 300) : opts.scale() > 0 ? bits.height() * opts.scale() : -opts.scale();
