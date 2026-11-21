@@ -57,7 +57,9 @@ std::string DecodeCode39AndCode93FullASCII(std::string encoded, const char ctrl[
 	for (auto in = encoded.cbegin(); in != encoded.cend(); ++in) {
 		char c = *in;
 		if (Contains(ctrl, c)) {
-			char next = *++in; // if in is one short of cend(), then next == 0
+			if (++in == encoded.cend())
+				return {}; // FormatError: control character at the end of the string
+			char next = *in;
 			if (next < 'A' || next > 'Z')
 				return {};
 			if (c == ctrl[0])
