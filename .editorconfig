@@ -8,7 +8,7 @@ charset = utf-8
 [*.{cpp,c,h,html,py,kt,cs,qlm}]
 indent_style = tab
 indent_size = 4
-max_line_length = 135
+max_line_length = 130
 
 [CMakeLists.txt]
 indent_style = space
