@@ -18,6 +18,7 @@ add_executable (UnitTest
     ContentTest.cpp
     ErrorTest.cpp
     GTINTest.cpp
+    ImageViewTest.cpp
     JSONTest.cpp
     PseudoRandom.h
     ReedSolomonTest.cpp

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <memory>
 #include <stdexcept>
 
@@ -80,13 +81,16 @@ public:
 		  _width(width),
 		  _height(height),
 		  _pixStride(pixStride ? pixStride : PixStride(format)),
-		  _rowStride(rowStride ? rowStride : width * _pixStride)
+		  _rowStride(rowStride ? rowStride : int64_t(width) * _pixStride) // prevent UB sanitizer issues due to integer overflow
 	{
 		if (_data == nullptr)
 			throw std::invalid_argument("Can not construct an ImageView from a NULL pointer");
 
 		if (_width <= 0 || _height <= 0)
 			throw std::invalid_argument("Neither width nor height of ImageView can be less or equal to 0");
+
+		if (std::abs(_pixStride) < PixStride(format))
+			throw std::invalid_argument("Pixel stride can not be smaller than required by the format");
 	}
 
 	/**
@@ -106,7 +110,7 @@ public:
 	ImageView(const uint8_t* data, int size, int width, int height, ImageFormat format, int rowStride = 0, int pixStride = 0)
 		: ImageView(data, width, height, format, rowStride, pixStride)
 	{
-		if (_rowStride < 0 || _pixStride < 0 || size < _height * _rowStride)
+		if (_rowStride < 0 || _pixStride < 0 || size < int64_t(_height) * _rowStride || _rowStride < int64_t(_width) * _pixStride)
 			throw std::invalid_argument("ImageView parameters are inconsistent (out of bounds)");
 	}
 
