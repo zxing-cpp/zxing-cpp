@@ -254,7 +254,7 @@ class MainActivity : AppCompatActivity() {
 								p.toPointF()
 							})
 						}
-						"${result.format} (${result.contentType}): ${
+						"${result.format} (${result.contentType}, ${result.extra.get("UEC")}): ${
 							if (result.contentType != BarcodeReader.ContentType.BINARY) {
 								result.text
 							} else {
