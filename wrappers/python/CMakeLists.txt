@@ -2,16 +2,6 @@ cmake_minimum_required(VERSION 3.21)
 project(ZXingPython)
 
 if (PROJECT_IS_TOP_LEVEL)
-    # TODO: replace with symlinks once https://github.com/scikit-build/scikit-build-core/issues/801 is resolved
-    message(STATUS "Copying files from parent folder needed for sdist")
-    foreach(NAME zxing.cmake LICENSE)
-        file(COPY_FILE
-                "${CMAKE_CURRENT_SOURCE_DIR}/../../${NAME}"
-                "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}"
-                ONLY_IF_DIFFERENT
-            )
-    endforeach()
-
     set(CMAKE_CXX_STANDARD 20) # required here for the module itself
 
     option (BUILD_SHARED_LIBS "Link python module to shared lib" OFF)

@@ -67,6 +67,12 @@ jobs:
       working-directory: wrappers/python
       run: python3 -m build --sdist
 
+    - name: Test sdist
+      working-directory: wrappers/python
+      run: |
+        python3 -m pip install --no-binary=:all: --no-cache-dir dist/*.tar.gz
+        python3 -c "import zxingcpp, importlib.metadata as m; print(m.version('zxing-cpp'))"
+
     - name: Upload sdist
       uses: actions/upload-artifact@v6
       with:

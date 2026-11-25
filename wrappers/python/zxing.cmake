@@ -1,0 +1,1 @@
+../../zxing.cmake

@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "scikit-build-core >=0.12",
+    "scikit-build-core >=1.0",
     "wheel",
     "nanobind >=2.11.0",
     # Required for nanobind stub generation on Python < 3.11
@@ -11,7 +11,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "zxing-cpp"
 #dynamic = ["version"]
-version = "3.2.0" # e.g. 1.0.0-rc1
+version = "3.2.0.post1" # e.g. 1.0.0-rc1
 description = "Python bindings for the zxing-cpp barcode library"
 readme = "README.md"
 authors = [
@@ -41,9 +41,7 @@ minimum-version = "build-system.requires"
 cmake.build-type = "Release"
 cmake.version = ">=3.21"
 
-# This triggers the logic in CMakeLists.txt that copies zxing.cmake + LICENSE from parent,
-# ensuring the sdist is self-contained.
-sdist.cmake = true
+sdist.resolve-symlinks = "all"
 
 sdist.exclude = ["zint/backend/tests", "zint/backend/tools"]
 
