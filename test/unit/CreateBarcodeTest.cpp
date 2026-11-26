@@ -13,6 +13,7 @@
 #include "ReadBarcode.h"
 #endif
 #include "CreateBarcode.h"
+#include "WriteBarcode.h"
 
 #include "gtest/gtest.h"
 
@@ -21,6 +22,29 @@
 using namespace ZXing;
 using namespace testing;
 using enum BarcodeFormat;
+
+#if defined(ZXING_READERS) && ZXING_ENABLE_1D
+TEST(CreateBarcodeTest, DXFilmEdgeDoesNotMixReadingDirections)
+{
+	for (auto text : {"77-2", "77-2/62A"})
+		for (int rotation : {0, 90, 180, 270})
+			for (auto binarizer : {Binarizer::LocalAverage, Binarizer::GlobalHistogram, Binarizer::FixedThreshold,
+								  Binarizer::BoolCast}) {
+				SCOPED_TRACE(Message() << text << " rotation=" << rotation << " binarizer=" << int(binarizer));
+				auto image = WriteBarcodeToImage(CreateBarcodeFromText(text, DXFilmEdge),
+												WriterOptions().scale(5).rotate(rotation));
+				for (auto formats : {BarcodeFormats(DXFilmEdge), BarcodeFormats()}) {
+					auto result = ReadBarcode(image, ReaderOptions().formats(formats).binarizer(binarizer));
+					// At 90/180 degrees, mixing directions used to decode "77-2/62A" as "95-8/44A".
+					EXPECT_TRUE(result.isValid());
+					if (result.isValid()) {
+						EXPECT_EQ(result.format(), DXFilmEdge);
+						EXPECT_EQ(result.text(), text);
+					}
+				}
+			}
+}
+#endif
 
 static void check(int line, std::string_view input, CreatorOptions cOpts, std::string_view symbologyIdentifier, std::string_view text,
 				  std::string_view bytes, bool hasECI, std::string_view textECI, std::string_view bytesECI, std::string_view HRI,
