@@ -274,6 +274,7 @@ LocalGrid& LocalGrid::at(PointI p, PointI offset)
 	// auto offsets = std::array{-X - Y, X - Y, X + Y, -X + Y};
 	auto offsets = std::array{-X, -X - Y, -Y, X - Y, X, X + Y, Y, -X + Y};
 
+	auto initialOrigin = origin;
 	// evaluate the image at origin + offset (allows to effectively work near the border of the symbol)
 	moveBy(offset);
 	adjustOriginAndStep(Axis::X, 0, 0, offsets);
@@ -283,6 +284,27 @@ LocalGrid& LocalGrid::at(PointI p, PointI offset)
 		adjustOriginAndStep(Axis::Y, 0, 2, offsets);
 	}
 	moveBy(-offset);
+
+	// move the origin to a point on the grid that is closest to the initial origin
+	double det = cross(stepX, stepY);
+	auto delta = initialOrigin - origin;
+	PointI iDelta(std::lround(cross(delta, stepY) / det), std::lround(cross(stepX, delta) / det));
+	double bestDist = INFINITY;
+	PointI bestP;
+	for (auto d : Spiral(1)){
+		PointI p = iDelta + d;
+		double dist = distance(getPos(p), initialOrigin);
+		if (dist < bestDist) {
+			bestDist = dist;
+			bestP = p;
+		}
+	}
+	if (bestP != PointI()) {
+		log_l("Moving origin to grid point closest to initial origin: (%d %d)", bestP.x, bestP.y);
+		log(getPos(bestP + offset), LOG_R);
+		origin = getPos(bestP);
+	}
+
 	log(origin, LOG_B, 2);
 	log_l("LocalGrid @ (%d %d), resulting origin: (%.1f %.1f), offset: (%d %d), stepX: (%.1f %.1f), stepY: (%.1f %.1f)", center.x,
 		  center.y, origin.x * 5, origin.y * 5, offset.x, offset.y, stepX.x, stepX.y, stepY.x, stepY.y);

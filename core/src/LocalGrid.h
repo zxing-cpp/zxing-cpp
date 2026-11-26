@@ -82,7 +82,8 @@ public:
 
 	bool tuneFromTiming(PointI start, std::string_view dirs, int radius); // returns true if the origin and step were successfully adjusted
 
-	inline PointF getPos(PointF p = {}) const { return origin + p.x * stepX + p.y * stepY; }
+	inline PointF getStep(PointF p = {1, 1}) const { return p.x * stepX + p.y * stepY; }
+	inline PointF getPos(PointF p = {}) const { return origin + getStep(p); }
 	inline PointF getPos(PointI p) const { return getPos(PointF(p.x, p.y)); }
 
 	inline Value get(PointF p) const
