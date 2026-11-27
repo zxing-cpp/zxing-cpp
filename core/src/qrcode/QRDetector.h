@@ -34,8 +34,8 @@ FinderPatternSets GenerateFinderPatternSets(FinderPatterns& patterns);
 using DetectorResults = std::generator<DetectorResult>;
 
 DetectorResults SampleQR(const BitMatrix& image, const FinderPatternSet& fp);
-DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp);
-DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp);
+DetectorResults SampleMQR(const BitMatrix& image, const ConcentricPattern& fp);
+DetectorResults SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp);
 
 DetectorResult DetectPureQR(const BitMatrix& image);
 DetectorResult DetectPureMQR(const BitMatrix& image);

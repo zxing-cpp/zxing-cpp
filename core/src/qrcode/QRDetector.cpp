@@ -783,11 +783,11 @@ DetectorResult DetectPureRMQR(const BitMatrix& image)
 	return {Deflate(image, dimW, dimH, top + moduleSize / 2, left + moduleSize / 2, moduleSize), std::move(pos)};
 }
 
-DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
+DetectorResults SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 {
 	auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 2);
 	if (!fpQuad)
-		return {};
+		co_return;
 
 	auto srcQuad = Rectangle(7, 7, 0.5);
 
@@ -828,7 +828,7 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 	}
 
 	if (!bestFI.isValid())
-		return {};
+		co_return;
 
 	const int dim = Version::SymbolSize(bestFI.microVersion, Type::Micro).x;
 
@@ -841,27 +841,32 @@ DetectorResult SampleMQR(const BitMatrix& image, const ConcentricPattern& fp)
 		blackPixels += cur.blackAt(px) + cur.blackAt(py);
 	}
 	if (blackPixels > 2 * dim / 3)
-		return {};
+		co_return;
+
+	// co_yield SampleGrid(image, dim, dim, bestPT); // returning that first has no observable performance benefit
 
 	auto grid = LocalGrid(image, bestPT, {dim, dim});
 
 	using enum LocalGrid::Pattern;
 	auto tr = grid.at({dim - 1, 0}, {-2, 1}).find({{"l", BW}, {"ld", W, {1, -1}}}, 4);
 	auto bl = grid.at({0, dim - 1}, {1, -2}).find({{"u", BW}, {"ur", W, {-1, 1}}}, 4);
-	auto br = grid.at({dim - 1, dim - 1}, {-3, -3}).findCorner(5, {1, 1});
+	auto br = grid.at({dim - 1, dim - 1}, {-3, -3}).findCorner(6, {1, 1});
 
-	bestPT = PerspectiveTransform(Rectangle(dim, dim, 0.5),
-								  {bestPT({0.5, 0.5}), tr.value_or(bestPT({dim - 0.5, 0.5})),
-								   br.value_or(bestPT({dim - 0.5, dim - 0.5})), bl.value_or(bestPT({0.5, dim - 0.5}))});
+	auto tunedPT = PerspectiveTransform(Rectangle(dim, dim, 0.5),
+										{bestPT({0.5, 0.5}), tr.value_or(bestPT({dim - 0.5, 0.5})),
+										 br.value_or(bestPT({dim - 0.5, dim - 0.5})), bl.value_or(bestPT({0.5, dim - 0.5}))});
 
-	return SampleGrid(image, dim, dim, bestPT);
+	co_yield SampleGrid(image, dim, dim, tunedPT);
+
+	// fall back to the transform based on the finder pattern alone (findCorner can fail when corner modules are white)
+	co_yield SampleGrid(image, dim, dim, bestPT);
 }
 
-DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
+DetectorResults SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 {
 	auto fpQuad = FindConcentricPatternCorners(image, fp, fp.size, 2);
 	if (!fpQuad)
-		return {};
+		co_return;
 
 	auto srcQuad = Rectangle(7, 7, 0.5);
 
@@ -900,12 +905,12 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 	}
 
 	if (!bestFI.isValid())
-		return {};
+		co_return;
 
 	const PointI dim = Version::SymbolSize(bestFI.microVersion, Type::rMQR);
 	const Version* version = Version::rMQR(bestFI.microVersion);
 	if (!version)
-		return {};
+		co_return;
 
 	auto mod2Pix = bestPT;
 	auto grid = LocalGrid(image, mod2Pix, dim);
@@ -982,7 +987,7 @@ DetectorResult SampleRMQR(const BitMatrix& image, const ConcentricPattern& fp)
 	if (tr && br)
 		mod2Pix = PerspectiveTransform(Rectangle(dim.x, dim.y, 0.5), {*apP(0, 0), *tr, *br, *apP(0, 1)});
 
-	return SampleGrid(image, dim.x, dim.y, mod2Pix, std::move(apP), apM, std::vector{0, dim.y - 1});
+	co_yield SampleGrid(image, dim.x, dim.y, mod2Pix, std::move(apP), apM, std::vector{0, dim.y - 1});
 }
 
 } // namespace ZXing::QRCode

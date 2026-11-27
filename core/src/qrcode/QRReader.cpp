@@ -59,7 +59,24 @@ BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 
 	std::vector<ConcentricPattern> usedFPs;
 	BarcodesData res;
-	
+
+	auto decodeResult = [&](DetectorResults&& detectorResults, BarcodeFormat format, auto&& accept) {
+		bool foundValid = false;
+		for (auto&& detectorResult : detectorResults) {
+			auto decoderResult = Decode(detectorResult.bits());
+			if (!accept(decoderResult))
+				continue;
+			if (decoderResult.isValid())
+				foundValid = true;
+			if (decoderResult.isValid(_opts.returnErrors())) {
+				res.emplace_back(MatrixBarcode(std::move(decoderResult), std::move(detectorResult), format));
+				if (res.back().isValid() || (maxSymbols && Size(res) == maxSymbols))
+					break;
+			}
+		}
+		return foundValid;
+	};
+
 	if (_opts.hasFormat(BarcodeFormat::QRCodeModel1 | BarcodeFormat::QRCodeModel2)) {
 		auto allFPSets = GenerateFinderPatternSets(allFPs);
 		for (const auto& fpSet : allFPSets) {
@@ -70,62 +87,43 @@ BarcodesData Reader::read(const BinaryBitmap& image, int maxSymbols) const
 			log(fpSet.tl, fpSet.tr);
 			log(fpSet.tr, fpSet.bl);
 
-			for (auto&& detectorResult: SampleQR(*binImg, fpSet)) {
-				auto decoderResult = Decode(detectorResult.bits());
-				if ((decoderResult.content().symbology.modifier == '0' && !_opts.hasFormat(BarcodeFormat::QRCodeModel1))
-					|| (decoderResult.content().symbology.modifier == '1' && !_opts.hasFormat(BarcodeFormat::QRCodeModel2)))
-					continue;
-				if (decoderResult.isValid()) {
-					usedFPs.push_back(fpSet.bl);
-					usedFPs.push_back(fpSet.tl);
-					usedFPs.push_back(fpSet.tr);
-				}
-				if (decoderResult.isValid(_opts.returnErrors())) {
-					res.emplace_back(MatrixBarcode(std::move(decoderResult), std::move(detectorResult), BarcodeFormat::QRCode));
-					// if we found a valid symbol, we stop the inner loop
-					if (res.back().isValid() || (maxSymbols && Size(res) == maxSymbols))
-						break;
-				}
+			if (decodeResult(SampleQR(*binImg, fpSet), BarcodeFormat::QRCode, [&](const auto& decoderResult) {
+					return (decoderResult.content().symbology.modifier != '0' || _opts.hasFormat(BarcodeFormat::QRCodeModel1))
+						   && (decoderResult.content().symbology.modifier != '1' || _opts.hasFormat(BarcodeFormat::QRCodeModel2));
+				})) {
+				usedFPs.push_back(fpSet.bl);
+				usedFPs.push_back(fpSet.tl);
+				usedFPs.push_back(fpSet.tr);
 			}
+
 			if (maxSymbols && Size(res) == maxSymbols)
 				break;
 		}
 	}
-	
+
 	if (_opts.hasFormat(BarcodeFormat::MicroQRCode) && !(maxSymbols && Size(res) == maxSymbols)) {
 		for (const auto& fp : allFPs) {
 			if (Contains(usedFPs, fp))
 				continue;
 
-			auto detectorResult = SampleMQR(*binImg, fp);
-			if (detectorResult.isValid()) {
-				auto decoderResult = Decode(detectorResult.bits());
-				if (decoderResult.isValid(_opts.returnErrors())) {
-					res.emplace_back(MatrixBarcode(std::move(decoderResult), std::move(detectorResult), BarcodeFormat::MicroQRCode));
-					if (maxSymbols && Size(res) == maxSymbols)
-						break;
-				}
+			if (decodeResult(SampleMQR(*binImg, fp), BarcodeFormat::MicroQRCode, [](const auto&) { return true; }))
+				usedFPs.push_back(fp);
 
-			}
+			if (maxSymbols && Size(res) == maxSymbols)
+				break;
 		}
 	}
-	
+
 	if (_opts.hasFormat(BarcodeFormat::RMQRCode) && !(maxSymbols && Size(res) == maxSymbols)) {
-		// TODO proper
 		for (const auto& fp : allFPs) {
 			if (Contains(usedFPs, fp))
 				continue;
 
-			auto detectorResult = SampleRMQR(*binImg, fp);
-			if (detectorResult.isValid()) {
-				auto decoderResult = Decode(detectorResult.bits());
-				if (decoderResult.isValid(_opts.returnErrors())) {
-					res.emplace_back(MatrixBarcode(std::move(decoderResult), std::move(detectorResult), BarcodeFormat::RMQRCode));
-					if (maxSymbols && Size(res) == maxSymbols)
-						break;
-				}
+			if (decodeResult(SampleRMQR(*binImg, fp), BarcodeFormat::RMQRCode, [](const auto&) { return true; }))
+				usedFPs.push_back(fp);
 
-			}
+			if (maxSymbols && Size(res) == maxSymbols)
+				break;
 		}
 	}
 
