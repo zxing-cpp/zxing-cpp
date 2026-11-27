@@ -204,11 +204,18 @@ CopyToResult(std::array<Nullable<ResultPoint>, 8>& result, const std::array<Null
 	}
 }
 
+// B S B S B S B S Bar/Space pattern
+// 11111111 0 1 0 1 0 1 000
+static const std::vector<int> START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
+// 1111111 0 1 000 1 0 1 00 1
+static const std::vector<int> STOP_PATTERN = { 7, 1, 1, 3, 1, 1, 1, 2, 1 };
+
 /**
 * Locate the vertices and the codewords area of a black blob using the Start
 * and Stop patterns as locators.
 *
 * @param matrix the scanned barcode image.
+* @param width the barcode lies left of this column.
 * @return an array containing the vertices:
 *           vertices[0] x, y top left barcode
 *           vertices[1] x, y bottom left barcode
@@ -219,15 +226,8 @@ CopyToResult(std::array<Nullable<ResultPoint>, 8>& result, const std::array<Null
 *           vertices[6] x, y top right codeword area
 *           vertices[7] x, y bottom right codeword area
 */
-static std::array<Nullable<ResultPoint>, 8> FindVertices(const BitMatrix& matrix, int startRow, int startColumn)
+static std::array<Nullable<ResultPoint>, 8> FindVertices(const BitMatrix& matrix, int startRow, int startColumn, int width)
 {
-	// B S B S B S B S Bar/Space pattern
-	// 11111111 0 1 0 1 0 1 000
-	static const std::vector<int> START_PATTERN = { 8, 1, 1, 1, 1, 1, 1, 3 };
-	// 1111111 0 1 000 1 0 1 00 1
-	static const std::vector<int> STOP_PATTERN = { 7, 1, 1, 3, 1, 1, 1, 2, 1 };
-
-	int width = matrix.width();
 	int height = matrix.height();
 
 	std::array<Nullable<ResultPoint>, 4> tmp;
@@ -256,48 +256,53 @@ static std::array<Nullable<ResultPoint>, 8> FindVertices(const BitMatrix& matrix
 */
 static std::list<std::array<Nullable<ResultPoint>, 8>> DetectBarcode(const BitMatrix& bitMatrix, bool multiple)
 {
-	int row = 0;
-	int column = 0;
-	bool foundBarcodeInRow = false;
+	int width = bitMatrix.width();
+	std::vector<int> counters(START_PATTERN.size(), 0);
 	std::list<std::array<Nullable<ResultPoint>, 8>> barcodeCoordinates;
 
-	while (row < bitMatrix.height()) {
-		auto vertices = FindVertices(bitMatrix, row, column);
+	// Whether the start pattern at x, y is the one of a barcode found before. Its start pattern runs from vertices[0] and
+	// [1] on the left to vertices[4] and [5] on the right, its stop pattern starts at vertices[6] and [7].
+	auto isFound = [&](int x, int y) {
+		return std::ranges::any_of(barcodeCoordinates, [x, y](const auto& vertices) {
+			if (vertices[0] == nullptr)
+				return false;
+			auto topLeft = vertices[0].value();
+			auto bottomLeft = vertices[1].value();
+			auto bottom = bottomLeft.y();
+			// a damaged start pattern may end early: the stop pattern of the same barcode shows where it ends
+			if (vertices[6] != nullptr && vertices[7] != nullptr && vertices[6].value().y() <= bottom)
+				bottom = std::max(bottom, vertices[7].value().y());
+			return y >= topLeft.y() && y <= bottom && x >= std::min(topLeft.x(), bottomLeft.x()) - MAX_PATTERN_DRIFT
+				   && x <= std::max(vertices[4].value().x(), vertices[5].value().x());
+		});
+	};
 
-		if (vertices[0] == nullptr && vertices[3] == nullptr) {
-			if (!foundBarcodeInRow) {
-				// we didn't find any barcode so that's the end of searching 
-				break;
-			}
-			// we didn't find a barcode starting at the given column and row. Try again from the first column and slightly
-			// below the lowest barcode we found so far.
-			foundBarcodeInRow = false;
-			column = 0;
-			for (auto& barcodeCoordinate : barcodeCoordinates) {
-				if (barcodeCoordinate[1] != nullptr) {
-					row = std::max(row, static_cast<int>(barcodeCoordinate[1].value().y()));
-				}
-				if (barcodeCoordinate[3] != nullptr) {
-					row = std::max(row, static_cast<int>(barcodeCoordinate[3].value().y()));
-				}
-			}
-			row += ROW_STEP;
-			continue;
-		}
-		foundBarcodeInRow = true;
-		barcodeCoordinates.push_back(vertices);
-		if (!multiple) {
-			break;
-		}
-		// if we didn't find a right row indicator column, then continue the search for the next barcode after the 
-		// start pattern of the barcode just found.
-		if (vertices[2] != nullptr) {
-			column = static_cast<int>(vertices[2].value().x());
-			row = static_cast<int>(vertices[2].value().y());
-		}
-		else {
-			column = static_cast<int>(vertices[4].value().x());
-			row = static_cast<int>(vertices[4].value().y());
+	// Look at every start pattern in every ROW_STEP-th row, from left to right, so that barcodes next to and below each
+	// other are all found, whatever their size and position.
+	for (int row = 0; row < bitMatrix.height(); row += ROW_STEP) {
+		int startPos, endPos;
+		for (int column = 0;
+			 FindGuardPattern(bitMatrix, column, row, width, false, START_PATTERN, counters, startPos, endPos);
+			 column = endPos) {
+			if (isFound(startPos, row))
+				continue;
+			// the barcode may start a few rows higher, below the row looked at before
+			int top = row;
+			int pos, posEnd;
+			while (top > std::max(0, row - ROW_STEP + 1)
+				   && FindGuardPattern(bitMatrix, startPos, top - 1, width, false, START_PATTERN, counters, pos, posEnd)
+				   && std::abs(pos - startPos) < MAX_PATTERN_DRIFT)
+				--top;
+			// the barcode ends before the next start pattern in this row: it must not take the stop pattern of its neighbour
+			int right = width;
+			if (FindGuardPattern(bitMatrix, endPos, row, width, false, START_PATTERN, counters, pos, posEnd))
+				right = pos;
+			auto vertices = FindVertices(bitMatrix, top, startPos, right);
+			if (vertices[0] == nullptr && vertices[3] == nullptr)
+				continue;
+			barcodeCoordinates.push_back(vertices);
+			if (!multiple)
+				return barcodeCoordinates;
 		}
 	}
 	return barcodeCoordinates;

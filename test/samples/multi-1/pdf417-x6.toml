@@ -1,0 +1,19 @@
+Format = "PDF417"
+
+[[symbol]]
+TextPlain = "PDF417 symbol 1"
+
+[[symbol]]
+TextPlain = "PDF417 symbol 2, a tall one with more text in it, some more text and more"
+
+[[symbol]]
+TextPlain = "PDF417 symbol 3"
+
+[[symbol]]
+TextPlain = "PDF417 symbol 4, a tall one with more text in it, some more text and more"
+
+[[symbol]]
+TextPlain = "PDF417 symbol 5"
+
+[[symbol]]
+TextPlain = "PDF417 symbol 6"
