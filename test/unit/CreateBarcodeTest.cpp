@@ -13,6 +13,7 @@
 #include "ReadBarcode.h"
 #endif
 #include "CreateBarcode.h"
+#include "WriteBarcode.h"
 
 #include "gtest/gtest.h"
 
@@ -21,6 +22,73 @@
 using namespace ZXing;
 using namespace testing;
 using enum BarcodeFormat;
+
+#if defined(ZXING_READERS) && ZXING_ENABLE_1D
+TEST(CreateBarcodeTest, DXFilmEdgeInversion)
+{
+	for (auto text : {"77-2", "77-2/62A"})
+		for (bool inverted : {false, true})
+			for (bool tryInvert : {false, true})
+				for (int rotation : {0, 270})
+					for (auto binarizer : {Binarizer::LocalAverage, Binarizer::GlobalHistogram, Binarizer::FixedThreshold,
+										   Binarizer::BoolCast}) {
+						SCOPED_TRACE(Message() << text << " inverted=" << inverted << " tryInvert=" << tryInvert
+											   << " rotation=" << rotation << " binarizer=" << int(binarizer));
+						auto image = WriteBarcodeToImage(CreateBarcodeFromText(text, DXFilmEdge),
+													WriterOptions().scale(5).invert(inverted).rotate(rotation));
+						// Empty formats exercises the default multi-format reader as well as DX-only reading.
+						for (auto formats : {BarcodeFormats(DXFilmEdge), BarcodeFormats()}) {
+							auto result = ReadBarcode(image, ReaderOptions().formats(formats).tryInvert(tryInvert).binarizer(binarizer));
+							EXPECT_EQ(result.isValid(), !inverted || tryInvert);
+							if (result.isValid()) {
+								EXPECT_EQ(result.format(), DXFilmEdge);
+								EXPECT_EQ(result.text(), text);
+								EXPECT_EQ(result.isInverted(), inverted);
+							}
+						}
+					}
+}
+
+TEST(CreateBarcodeTest, DXFilmEdgeInvertedRequiresTrailingQuietZone)
+{
+	for (auto text : {"77-2", "77-2/62A"}) {
+		auto image = WriteBarcodeToImage(CreateBarcodeFromText(text, DXFilmEdge), WriterOptions().scale(5).invert(true));
+		// Find the end of the inverted stop (white/black/white) on the data track.
+		int stopEnd = image.width();
+		while (stopEnd > 0 && *image.data(stopEnd - 1, image.height() / 2) == 0)
+			--stopEnd;
+		ASSERT_GT(stopEnd, 0);
+		ASSERT_GE(image.width() - stopEnd, 3);
+		for (int margin : {0, 1, 3})
+			for (auto binarizer : {Binarizer::LocalAverage, Binarizer::GlobalHistogram, Binarizer::FixedThreshold,
+								  Binarizer::BoolCast}) {
+				SCOPED_TRACE(Message() << text << " margin=" << margin << " binarizer=" << int(binarizer));
+				auto cropped = image.cropped(0, 0, stopEnd + margin, image.height());
+				auto result = ReadBarcode(cropped, ReaderOptions().formats(DXFilmEdge).tryInvert(true).tryRotate(false)
+												.tryDownscale(false).binarizer(binarizer));
+				// A five-pixel module needs at least 0.5 * 5 - 1 pixels of quiet zone.
+				EXPECT_EQ(result.isValid(), margin == 3);
+				if (result.isValid()) {
+					EXPECT_EQ(result.text(), text);
+					EXPECT_TRUE(result.isInverted());
+				}
+			}
+	}
+}
+
+TEST(CreateBarcodeTest, DXFilmEdgeInversionDoesNotEnableOtherLinearReaders)
+{
+	for (bool inverted : {false, true}) {
+		auto image = WriteBarcodeToImage(CreateBarcodeFromText("123456", Code128), WriterOptions().scale(5).invert(inverted));
+		auto result = ReadBarcode(image, ReaderOptions().formats(Code128 | DXFilmEdge).tryInvert(true));
+		EXPECT_EQ(result.isValid(), !inverted);
+		if (result.isValid()) {
+			EXPECT_EQ(result.format(), Code128);
+			EXPECT_EQ(result.text(), "123456");
+		}
+	}
+}
+#endif
 
 static void check(int line, std::string_view input, CreatorOptions cOpts, std::string_view symbologyIdentifier, std::string_view text,
 				  std::string_view bytes, bool hasECI, std::string_view textECI, std::string_view bytesECI, std::string_view HRI,
